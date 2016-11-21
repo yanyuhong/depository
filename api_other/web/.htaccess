@@ -1,0 +1,14 @@
+<ifModule mod_rewrite.c>
+
+	RewriteEngine on
+
+    RewriteCond $1 !^(index\.php|img|css|js|favicon\.ico|robots\.txt)
+
+	# if a directory or a file exists, use it directly
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+
+	# otherwise forward it to index.php
+	RewriteRule ^(.*)$ index.php/$1 [L,QSA]
+
+</ifModule>
