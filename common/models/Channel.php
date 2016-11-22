@@ -5,6 +5,7 @@ namespace common\models;
 use common\tools\Encrypt;
 use common\tools\Time;
 use Yii;
+use yii\web\IdentityInterface;
 
 /**
  * This is the model class for table "channel".
@@ -19,7 +20,7 @@ use Yii;
  * @property Account[] $accounts
  * @property Operation[] $operations
  */
-class Channel extends \yii\db\ActiveRecord
+class Channel extends \yii\db\ActiveRecord implements IdentityInterface
 {
     /**
      * @inheritdoc
@@ -69,6 +70,8 @@ class Channel extends \yii\db\ActiveRecord
         $this->channel_created_at = Time::now();
     }
 
+    //==========
+    //next is fk function
     /**
      * @return \yii\db\ActiveQuery
      */
@@ -83,5 +86,50 @@ class Channel extends \yii\db\ActiveRecord
     public function getOperations()
     {
         return $this->hasMany(Operation::className(), ['operation_channel_id' => 'channel_id']);
+    }
+
+    //===========
+    //next is IdentityInterface function
+    /**
+     * @inheritdoc
+     */
+    public static function findIdentity($id)
+    {
+        return static::find()->where(['channel_id' => $id])->one();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function findIdentityByAccessToken($token, $type = null)
+    {
+        $key = explode(' ', $token)[0];
+        $secret = explode(' ', $token)[1];
+
+        return static::find()->where(['channel_key' => $key, 'channel_secret' => $secret])->one();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId()
+    {
+        return $this->getPrimaryKey();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAuthKey()
+    {
+        return $this->channel_secret;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function validateAuthKey($authKey)
+    {
+        return $this->getAuthKey() === $authKey;
     }
 }

@@ -30,7 +30,7 @@ return [
 
     'components' => [
         'user' => [
-            'identityClass' => 'common\models\User',
+            'identityClass' => 'common\models\Channel',
             'enableAutoLogin' => false,
             'enableSession' => false,
             'loginUrl' => null
