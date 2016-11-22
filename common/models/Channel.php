@@ -64,7 +64,7 @@ class Channel extends \yii\db\ActiveRecord
 
     public function initNew($name){
         $this->channel_name = $name;
-        $this->channel_key = Encrypt::md5Str($name);
+        $this->channel_key = Encrypt::getNum($name);
         $this->channel_secret = Encrypt::md5Str($name, 'channel');
         $this->channel_created_at = Time::now();
     }
