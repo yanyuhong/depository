@@ -2,6 +2,8 @@
 
 namespace common\models;
 
+use common\tools\Encrypt;
+use common\tools\Time;
 use Yii;
 
 /**
@@ -37,6 +39,8 @@ class Channel extends \yii\db\ActiveRecord
             [['channel_created_at', 'channel_updated_at'], 'safe'],
             [['channel_key', 'channel_secret'], 'string', 'max' => 64],
             [['channel_name'], 'string', 'max' => 255],
+            [['channel_key'], 'unique'],
+            [['channel_name'], 'unique'],
         ];
     }
 
@@ -53,6 +57,16 @@ class Channel extends \yii\db\ActiveRecord
             'channel_created_at' => 'Channel Created At',
             'channel_updated_at' => 'Channel Updated At',
         ];
+    }
+
+    //==========
+    //next is model function
+
+    public function initNew($name){
+        $this->channel_name = $name;
+        $this->channel_key = Encrypt::md5Str($name);
+        $this->channel_secret = Encrypt::md5Str($name, 'channel');
+        $this->channel_created_at = Time::now();
     }
 
     /**

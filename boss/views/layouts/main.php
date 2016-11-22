@@ -86,7 +86,7 @@ AppAsset::register($this);
                         <span class="thumb-sm avatar pull-left">
                           <img src="/images/avatar.png" alt="...">
                         </span>
-                        <?= Yii::$app->user->identity->username ?><b class="caret"></b>
+<!--                        --><?//= Yii::$app->user->identity->username ?><!--<b class="caret"></b>-->
                     </a>
                     <ul class="dropdown-menu animated fadeInRight">
 <!--                        <li>-->

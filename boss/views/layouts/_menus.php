@@ -18,7 +18,7 @@ use common\models\User;
                       </span>
                       <span class="hidden-nav-xs clear">
                         <span class="block m-t-xs">
-                          <strong class="font-bold text-lt"><?= Yii::$app->user->identity->username ?></strong>
+<!--                          <strong class="font-bold text-lt">--><?//= Yii::$app->user->identity->username ?><!--</strong>-->
                           <b class="caret"></b>
                         </span>
                         <span class="text-muted text-xs block">
@@ -42,23 +42,23 @@ use common\models\User;
                 <!-- nav -->
                 <nav class="nav-primary hidden-xs">
                     <?php
-                    $callback = function ($menu) {
-                        $return = [
-                            'label' => $menu['name'],
-                            'url'   => [$menu['route']],
-                            'icon'  => isset($menu['data']) ? $menu['data'] : 'i i-dot icon',
-                            'items' => $menu['children']
-                        ];
-
-                        return $return;
-                    };
-                    $menus = MenuHelper::getAssignedMenu(Yii::$app->user->id, null, $callback, !YII_ENV_PROD); //非正式环境不缓存
-                    echo Menu::widget(
-                        [
-                            'options' => ['class' => 'nav nav-main', 'data-ride' => 'collapse'],
-                            'items'   => $menus,
-                        ]
-                    );
+//                    $callback = function ($menu) {
+//                        $return = [
+//                            'label' => $menu['name'],
+//                            'url'   => [$menu['route']],
+//                            'icon'  => isset($menu['data']) ? $menu['data'] : 'i i-dot icon',
+//                            'items' => $menu['children']
+//                        ];
+//
+//                        return $return;
+//                    };
+//                    $menus = MenuHelper::getAssignedMenu(Yii::$app->user->id, null, $callback, !YII_ENV_PROD); //非正式环境不缓存
+//                    echo Menu::widget(
+//                        [
+//                            'options' => ['class' => 'nav nav-main', 'data-ride' => 'collapse'],
+//                            'items'   => $menus,
+//                        ]
+//                    );
                     ?>
                 </nav>
                 <!-- / nav -->
