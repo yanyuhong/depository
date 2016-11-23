@@ -16,10 +16,14 @@ use Yii;
  * @property string $operation_message
  * @property string $operation_created_at
  * @property string $operation_finished_at
- * @property string $operation_updatead_at
+ * @property string $operation_updated_at
  *
  * @property AccountLog[] $accountLogs
+ * @property Charge[] $charges
  * @property Channel $operationChannel
+ * @property Refund[] $refunds
+ * @property Transfer[] $transfers
+ * @property Withdraw[] $withdraws
  */
 class Operation extends \yii\db\ActiveRecord
 {
@@ -40,7 +44,7 @@ class Operation extends \yii\db\ActiveRecord
             [['operation_channel_id', 'operation_serial_num', 'operation_type', 'operation_snapshot'], 'required'],
             [['operation_channel_id', 'operation_type', 'operation_status'], 'integer'],
             [['operation_snapshot'], 'string'],
-            [['operation_created_at', 'operation_finished_at', 'operation_updatead_at'], 'safe'],
+            [['operation_created_at', 'operation_finished_at', 'operation_updated_at'], 'safe'],
             [['operation_serial_num'], 'string', 'max' => 64],
             [['operation_message'], 'string', 'max' => 255],
             [['operation_channel_id', 'operation_serial_num'], 'unique', 'targetAttribute' => ['operation_channel_id', 'operation_serial_num'], 'message' => 'The combination of Operation Channel ID and Operation Serial Num has already been taken.'],
@@ -63,8 +67,22 @@ class Operation extends \yii\db\ActiveRecord
             'operation_message' => 'Operation Message',
             'operation_created_at' => 'Operation Created At',
             'operation_finished_at' => 'Operation Finished At',
-            'operation_updatead_at' => 'Operation Updatead At',
+            'operation_updated_at' => 'Operation Updated At',
         ];
+    }
+
+    //=========
+    //next is model function
+
+
+    //==========
+    //next is find function
+
+    public static function findByChannelNum($channel, $num)
+    {
+        return static::find()
+            ->where(['operation_channel_id' => $channel, 'operation_serial_num' => $num])
+            ->one();
     }
 
     /**
@@ -78,8 +96,40 @@ class Operation extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
+    public function getCharges()
+    {
+        return $this->hasMany(Charge::className(), ['charge_operation_id' => 'operation_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getOperationChannel()
     {
         return $this->hasOne(Channel::className(), ['channel_id' => 'operation_channel_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getRefunds()
+    {
+        return $this->hasMany(Refund::className(), ['refund_operation_id' => 'operation_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getTransfers()
+    {
+        return $this->hasMany(Transfer::className(), ['transfer_operation_id' => 'operation_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getWithdraws()
+    {
+        return $this->hasMany(Withdraw::className(), ['withdraw_operation_id' => 'operation_id']);
     }
 }

@@ -10,6 +10,9 @@ namespace api_biz\versions\v1\controllers;
 
 
 use api_biz\components\ApiController;
+use api_biz\models\OperationForm;
+
+use Yii;
 
 class OperationController extends ApiController
 {
@@ -33,12 +36,45 @@ class OperationController extends ApiController
 
     public function actionQuery()
     {
-        return $this->renderJsonSuccess();
+        $operationForm = new OperationForm();
+        $operationForm->load(['OperationForm' => Yii::$app->request->get()]);
+
+        if (!$operationForm->validate($operationForm->operationQueryRules())) {
+            return $this->renderJsonFailed('40001', $operationForm->getErrors());
+        }
+
+        $operationForm = $operationForm->searchByNum();
+
+        if(!$operationForm){
+            return $this->renderJsonFailed('43001');
+        }
+
+        $data = $operationForm->queryFields();
+
+        return $this->renderJsonSuccess($data);
     }
 
     public function actionCharge()
     {
-        return $this->renderJsonSuccess();
+        $operationForm = new OperationForm();
+        $operationForm->load(['OperationForm' => Yii::$app->request->post()]);
+
+        if (!$operationForm->validate($operationForm->operationChargeRules())) {
+            return $this->renderJsonFailed('40001', $operationForm->getErrors());
+        }
+
+        if($operationForm->operationModel){
+            return $this->renderJsonFailed('40002');
+        }
+
+        if(!$operationForm->accountModel){
+            return $this->renderJsonFailed('40003');
+        }
+
+        $operationForm->doCharge();
+        $data = $operationForm->chargeFields();
+
+        return $this->renderJsonSuccess($data);
     }
 
     public function actionWithdraw()
