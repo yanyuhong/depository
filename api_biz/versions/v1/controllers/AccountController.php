@@ -20,10 +20,10 @@ class AccountController extends ApiController
     public function behaviors()
     {
         $behaviors = parent::behaviors();
-        $behaviors['access']['only'] = ['find'];
+        $behaviors['access']['only'] = ['select', 'create', 'card-bind'];
         $behaviors['access']['rules'] = [
             [
-                'actions' => ['find'],
+                'actions' => ['select', 'create', 'card-bind'],
                 'allow' => true,
                 'roles' => ['@'],
             ],
@@ -31,16 +31,18 @@ class AccountController extends ApiController
         return $behaviors;
     }
 
-    public function actionFind(){
-        $id = Yii::$app->request->get('id');
+    public function actionSelect()
+    {
+        return $this->renderJsonSuccess("查询账户");
+    }
 
-        $channel = Yii::$app->user->identity;
+    public function actionCreate()
+    {
+        return $this->renderJsonSuccess("新建账户");
+    }
 
-        $data = [
-            "channel" => $channel,
-            "id" => $id,
-        ];
-
-        return $this->renderJsonSuccess($data);
+    public function actionCardBind()
+    {
+        return $this->renderJsonSuccess("绑定银行卡");
     }
 }
