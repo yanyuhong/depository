@@ -41,12 +41,12 @@ class AccountController extends ApiController
         if (!$accountForm->validate($accountForm->accountCreateRules())) {
             return $this->renderJsonFailed('40001', $accountForm->getErrors());
         }
-
-        $orderList = array();
-        $search_query = $accountForm->searchByKey();
-
-
-        return $this->renderJsonSuccess($orderList);
+        $accountForm = $accountForm->searchByKey();
+        if (!$accountForm) {
+            $this->renderJsonFailed('42002', $accountForm->getErrors());
+        }
+        $data = $accountForm->selectList();
+        return $this->renderJsonSuccess($data);
 
     }
 

@@ -10,7 +10,6 @@ namespace api_biz\models;
 
 use common\components\validator\IdnumValidator;
 use common\models\Account;
-use common\tools\Time;
 use Yii;
 use yii\base\Model;
 
@@ -66,7 +65,7 @@ class AccountForm extends Account
     {
         $channel = Yii::$app->user->identity;
         $account = new Account();
-        if (!$account->findByChannelKey($channel->channel_id, $this->account)) {
+        if (!self::findByChannelKey($channel->channel_id, $this->account)) {
             $account->initNew($channel->channel_id, $this->account);
             $account->save();
             return true;
@@ -90,31 +89,42 @@ class AccountForm extends Account
     public function searchByKey()
     {
         $channel = Yii::$app->user->identity;
-        $query = self::find();
-        $query->leftJoin("card", "card_account_id=account_id");
-        $query->where(["account_channel_id" => $channel->channel_id]);
-        return $query;
+
+        $account = self::findByChannelKey($channel->channel_id, $this->account);
+        $new = $account ? new AccountForm($account) : null;
+
+        if ($new) {
+            $new->load(['AccountForm' => (array)$this]);
+        }
+
+        return $new;
     }
     //================
     //next is field function
     public function selectList()
     {
         return [
-            "amount" => (string)$this->account_amount,
-            "cardList" => $this->copyNum()
+            "amount" => $this->copyAmount(),
+            "cardList" => $this->copyCardList()
         ];
     }
 
     //====================
     //next is private function
-    private function copyNum()
+    private function copyCardList()
     {
-        $card = array();
-        $card[] = [
-            // "num"=>$this->cards->
+        $albumList = array();
 
-        ];
-        return $card;
+        foreach ($this->cards as $key) {
+            $albumList[] = [
+                "num" => $key['card_num']
+            ];
+        }
+        return $albumList;
     }
 
+    private function copyAmount()
+    {
+        return (string)$this->account_amount;
+    }
 }

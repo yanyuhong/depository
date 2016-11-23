@@ -66,7 +66,8 @@ class Account extends \yii\db\ActiveRecord
         ];
     }
 
-
+//==================
+//next is search function
     public static function findByChannelKey($channel_id, $account_key)
     {
         return static::find()
@@ -75,7 +76,8 @@ class Account extends \yii\db\ActiveRecord
                 "account_key" => $account_key,
             ])->one();
     }
-
+//=====================
+//next is model function
     public function initNew($channel_id, $account_key)
     {
         $this->account_channel_id = $channel_id;
