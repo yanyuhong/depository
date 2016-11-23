@@ -10,6 +10,7 @@ namespace api_biz\versions\v1\controllers;
 
 
 use api_biz\components\ApiController;
+use api_biz\models\AccountForm;
 use Yii;
 
 class AccountController extends ApiController
@@ -33,12 +34,35 @@ class AccountController extends ApiController
 
     public function actionSelect()
     {
-        return $this->renderJsonSuccess("查询账户");
+
+        $accountForm = new AccountForm();
+        $accountForm->load(['AccountForm' => Yii::$app->request->get()]);
+
+        if (!$accountForm->validate($accountForm->accountCreateRules())) {
+            return $this->renderJsonFailed('40001', $accountForm->getErrors());
+        }
+
+        $orderList = array();
+        $search_query = $accountForm->searchByKey();
+
+
+        return $this->renderJsonSuccess($orderList);
+
     }
 
     public function actionCreate()
     {
-        return $this->renderJsonSuccess("新建账户");
+        $accountForm = new AccountForm();
+        $accountForm->load(['AccountForm' => Yii::$app->request->post()]);
+
+        if (!$accountForm->validate($accountForm->accountCreateRules())) {
+            return $this->renderJsonFailed('40001', $accountForm->getErrors());
+        }
+
+        if (!$accountForm->addAccount()) {
+            return $this->renderJsonFailed('42001', $accountForm->getErrors());
+        }
+        return $this->renderJsonSuccess();
     }
 
     public function actionCardBind()

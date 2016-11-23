@@ -2,6 +2,7 @@
 
 namespace common\models;
 
+use common\tools\Time;
 use Yii;
 
 /**
@@ -63,6 +64,24 @@ class Account extends \yii\db\ActiveRecord
             'account_created_at' => 'Account Created At',
             'account_updated_at' => 'Account Updated At',
         ];
+    }
+
+
+    public static function findByChannelKey($channel_id, $account_key)
+    {
+        return static::find()
+            ->where([
+                "account_channel_id" => $channel_id,
+                "account_key" => $account_key,
+            ])->one();
+    }
+
+    public function initNew($channel_id, $account_key)
+    {
+        $this->account_channel_id = $channel_id;
+        $this->account_key = $account_key;
+        $this->account_type = 1;
+        $this->account_created_at = Time::now();
     }
 
     /**
