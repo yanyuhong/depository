@@ -45,7 +45,7 @@ class OperationController extends ApiController
 
         $operationForm = $operationForm->searchByNum();
 
-        if(!$operationForm){
+        if (!$operationForm) {
             return $this->renderJsonFailed('43001');
         }
 
@@ -63,15 +63,20 @@ class OperationController extends ApiController
             return $this->renderJsonFailed('40001', $operationForm->getErrors());
         }
 
-        if($operationForm->operationModel){
-            return $this->renderJsonFailed('40002');
+        $operationForm->check();
+
+        if ($operationForm->operationModel) {
+            return $this->renderJsonFailed('43002');
         }
 
-        if(!$operationForm->accountModel){
-            return $this->renderJsonFailed('40003');
+        if (!$operationForm->accountModel) {
+            return $this->renderJsonFailed('43003');
         }
 
-        $operationForm->doCharge();
+        if (!$operationForm->doCharge()) {
+            return $this->renderJsonFailed('40000');
+        }
+
         $data = $operationForm->chargeFields();
 
         return $this->renderJsonSuccess($data);

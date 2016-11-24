@@ -2,6 +2,7 @@
 
 namespace common\models;
 
+use common\tools\Time;
 use Yii;
 
 /**
@@ -27,6 +28,12 @@ use Yii;
  */
 class Operation extends \yii\db\ActiveRecord
 {
+
+    const OPERATION_TYPE_CHARGE = 1; //交易类型:充值
+
+
+    const OPERATION_STATUS_RECEIVE = 1; //交易状态:接收
+
     /**
      * @inheritdoc
      */
@@ -73,7 +80,15 @@ class Operation extends \yii\db\ActiveRecord
 
     //=========
     //next is model function
-
+    public function initNew($channel, $num, $type, $snapshot)
+    {
+        $this->operation_channel_id = $channel;
+        $this->operation_serial_num = $num;
+        $this->operation_type = $type;
+        $this->operation_snapshot = $snapshot;
+        $this->operation_status = self::OPERATION_STATUS_RECEIVE;
+        $this->operation_created_at = Time::now();
+    }
 
     //==========
     //next is find function
@@ -85,6 +100,8 @@ class Operation extends \yii\db\ActiveRecord
             ->one();
     }
 
+    //========
+    //next is fk function
     /**
      * @return \yii\db\ActiveQuery
      */
