@@ -26,7 +26,6 @@ class Alipay
         $this->aop->appId = $channel->channel_alipay_appId;
         $this->aop->rsaPrivateKey = $channel->channel_alipay_rsaPrivateKey;
         $this->aop->alipayrsaPublicKey = $channel->channel_alipay_rsaPublicKey;
-        $this->aop->alipayPublicKey = $channel->channel_alipay_publicKey;
     }
 
     /**
@@ -46,12 +45,32 @@ class Alipay
             "total_amount" => (string)$model->alipay_total_amount,
             "produce_code" => "QUICK_MSECURITY_PAY",
             "goods_type" => (string)$model->alipay_goods_type,
-
         ];
         $request->setBizContent(json_encode($biz_content));
         $request->setNotifyUrl("");
         $orderString = $this->aop->sdkExecute($request);
         return $orderString;
+    }
+
+    /**
+     * @param $model \common\models\Alipay
+     */
+    public function queryTrade($model){
+        $request = new \AlipayTradeQueryRequest();
+
+        $biz_content = [
+            "out_trade_no" => (string)$model->alipay_out_trade_no,
+        ];
+
+        $request->setBizContent(json_encode($biz_content));
+
+        $response = $this->aop->execute($request);
+
+        $response = isset($response->alipay_trade_query_response)?$response->alipay_trade_query_response:null;
+
+        if($response && isset($response->code)){
+            $model->updateStatus($response);
+        }
     }
 
 }

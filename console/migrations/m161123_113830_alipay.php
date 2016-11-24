@@ -11,8 +11,7 @@ class m161123_113830_alipay extends Migration
 ALTER TABLE `channel` 
 ADD COLUMN `channel_alipay_appId` VARCHAR(255) NULL AFTER `channel_name`,
 ADD COLUMN `channel_alipay_rsaPrivateKey` TEXT NULL AFTER `channel_alipay_appId`,
-ADD COLUMN `channel_alipay_rsaPublicKey` TEXT NULL AFTER `channel_alipay_rsaPrivateKey`,
-ADD COLUMN `channel_alipay_publicKey` TEXT NULL AFTER `channel_alipay_rsaPublicKey`;
+ADD COLUMN `channel_alipay_rsaPublicKey` TEXT NULL AFTER `channel_alipay_rsaPrivateKey`;
 
 ALTER TABLE `charge` 
 ADD COLUMN `charge_title` VARCHAR(255) NOT NULL AFTER `charge_amount`,

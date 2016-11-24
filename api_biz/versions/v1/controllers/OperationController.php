@@ -43,11 +43,13 @@ class OperationController extends ApiController
             return $this->renderJsonFailed('40001', $operationForm->getErrors());
         }
 
-        $operationForm = $operationForm->searchByNum();
+        $operationForm->searchByNum();
 
-        if (!$operationForm) {
+        if (!$operationForm->operationModel) {
             return $this->renderJsonFailed('43001');
         }
+
+        $operationForm->queryStatus();
 
         $data = $operationForm->queryFields();
 

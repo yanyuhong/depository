@@ -24,7 +24,13 @@ class OperationForm extends Operation
     public $goodsType;
     public $express;
 
+    /**
+     * @var Operation
+     */
     public $operationModel;
+    /**
+     * @var Account
+     */
     public $accountModel;
 
     public $payData;
@@ -40,7 +46,7 @@ class OperationForm extends Operation
             [['num', 'account'], 'string', 'max' => 64],
             [['title'], 'string', 'max' => 255],
             [['detail'], 'string', 'max' => 128],
-            [['express'], 'integer', 'min' => 60,'max' => 1296000],
+            [['express'], 'integer', 'min' => 60, 'max' => 1296000],
             [['amount'], 'number'],
             ['payment', 'in', 'range' => array_keys(Charge::$paymentList)],
             ['goodsType', 'in', 'range' => Charge::$goodsTypeList]
@@ -94,7 +100,7 @@ class OperationForm extends Operation
             );
             if ($charge->save()) {
                 $this->payData = $charge->getPayData();
-                if($this->payData) {
+                if ($this->payData) {
                     return true;
                 }
             }
@@ -114,20 +120,17 @@ class OperationForm extends Operation
         $this->accountModel = $account;
     }
 
+    public function queryStatus(){
+        $this->operationModel->query();
+    }
+
     //===========
     //next is search function
 
     public function searchByNum()
     {
         $channel = Yii::$app->user->identity;
-        $operation = self::findByChannelNum($channel->channel_id, $this->num);
-        $new = $operation ? new OperationForm($operation) : null;
-
-        if ($new) {
-            $new->load(['OperationForm' => (array)$this]);
-        }
-
-        return $new;
+        $this->operationModel = self::findByChannelNum($channel->channel_id, $this->num);
     }
 
     //=========
@@ -136,7 +139,7 @@ class OperationForm extends Operation
     public function queryFields()
     {
         return [
-            'status' => $this->copyThisStatus(),
+            'status' => $this->copyStatus(),
             'type' => $this->copyType(),
             'time' => $this->copyUpdateTime(),
             'message' => $this->copyMessage(),
@@ -175,24 +178,31 @@ class OperationForm extends Operation
         }
     }
 
-    private function copyThisStatus()
-    {
-        return (string)$this->operation_status;
-    }
-
     private function copyType()
     {
-        return (string)$this->operation_type;
+        if ($this->operationModel->operation_type) {
+            return (string)$this->operationModel->operation_type;
+        } else {
+            return "";
+        }
     }
 
     private function copyUpdateTime()
     {
-        return (string)$this->operation_updated_at;
+        if ($this->operationModel->operation_updated_at) {
+            return (string)$this->operationModel->operation_updated_at;
+        } else {
+            return "";
+        }
     }
 
     private function copyMessage()
     {
-        return (string)$this->operation_message;
+        if ($this->operationModel->operation_message) {
+            return (string)$this->operationModel->operation_message;
+        } else {
+            return "";
+        }
     }
 
     private function copyPayData()

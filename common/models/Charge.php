@@ -32,8 +32,22 @@ class Charge extends \yii\db\ActiveRecord
 
     const CHARGE_TYPE_ALIPAY = 3;//支付方式:支付宝app
 
+    const CHARGE_STATUS_RECEIVE = 1;//充值状态:接收
+    const CHARGE_STATUS_WAIT = 2;//充值状态:接收
+    const CHARGE_STATUS_SUCCESS = 3;//充值状态:成功
+    const CHARGE_STATUS_CLOSE = 4;//充值状态:关闭
+    const CHARGE_STATUS_FINISH = 5;//充值状态:完成
+
     public static $goodsTypeList = [
         self::CHARGE_GOODS_TYPE_VIRTUAL, self::CHARGE_GOODS_TYPE_ACTUAL
+    ];
+
+    public $statusList = [
+        self::CHARGE_STATUS_RECEIVE => Operation::OPERATION_STATUS_RECEIVE,
+        self::CHARGE_STATUS_WAIT => Operation::OPERATION_STATUS_PROCESS,
+        self::CHARGE_STATUS_SUCCESS => Operation::OPERATION_STATUS_SUCCESS,
+        self::CHARGE_STATUS_CLOSE => Operation::OPERATION_STATUS_FAIL,
+        self::CHARGE_STATUS_FINISH => Operation::OPERATION_STATUS_SUCCESS,
     ];
 
     public static $paymentList = [
@@ -62,6 +76,7 @@ class Charge extends \yii\db\ActiveRecord
             [['charge_amount'], 'number'],
             [['charge_express_time'], 'safe'],
             [['charge_title', 'charge_detail'], 'string', 'max' => 255],
+            [['charge_operation_id'], 'unique'],
             [['charge_account_id'], 'exist', 'skipOnError' => true, 'targetClass' => Account::className(), 'targetAttribute' => ['charge_account_id' => 'account_id']],
             [['charge_operation_id'], 'exist', 'skipOnError' => true, 'targetClass' => Operation::className(), 'targetAttribute' => ['charge_operation_id' => 'operation_id']],
         ];
@@ -102,12 +117,13 @@ class Charge extends \yii\db\ActiveRecord
         $this->charge_express_time = Time::after($express);
     }
 
-    public function getPayData(){
-        switch ($this->charge_type){
+    public function getPayData()
+    {
+        switch ($this->charge_type) {
             case self::CHARGE_TYPE_ALIPAY:
                 $alipay = new Alipay();
                 $alipay->initNew($this);
-                if($alipay->save()){
+                if ($alipay->save()) {
                     $orderString = $alipay->pay();
                     return [
                         "orderString" => (string)$orderString
@@ -116,6 +132,54 @@ class Charge extends \yii\db\ActiveRecord
                 break;
         }
         return false;
+    }
+
+    public function query()
+    {
+        if($this->charge_status == self::CHARGE_STATUS_RECEIVE || $this->charge_status == self::CHARGE_STATUS_WAIT){
+            switch ($this->charge_type) {
+                case self::CHARGE_TYPE_ALIPAY:
+                    $alipay = $this->alipay;
+                    $alipay->query();
+                    break;
+            }
+        }
+        $this->chargeOperation->updateStatus();
+        return true;
+    }
+
+    public function updateStatus()
+    {
+        switch ($this->charge_type) {
+            case self::CHARGE_TYPE_ALIPAY:
+                if ($this->alipay->alipay_trade_status) {
+                    $this->charge_status = $this->alipay->statusList[$this->alipay->alipay_trade_status];
+                }
+                break;
+        }
+
+        if ($this->update()) {
+            $this->chargeOperation->updateStatus();
+        }
+    }
+
+    public function getFinishTime()
+    {
+        switch ($this->charge_type) {
+            case self::CHARGE_TYPE_ALIPAY:
+                return $this->alipay->alipay_send_pay_date;
+                break;
+        }
+        return "";
+    }
+
+    public function getMessage(){
+        switch ($this->charge_type) {
+            case self::CHARGE_TYPE_ALIPAY:
+                return unserialize($this->alipay->alipay_response)->msg;
+                break;
+        }
+        return "";
     }
 
     //=======

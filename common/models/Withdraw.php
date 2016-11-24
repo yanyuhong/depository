@@ -37,9 +37,10 @@ class Withdraw extends \yii\db\ActiveRecord
             [['withdraw_operation_id', 'withdraw_account_id', 'withdraw_card_id', 'withdraw_amount', 'withdraw_status'], 'required'],
             [['withdraw_operation_id', 'withdraw_account_id', 'withdraw_card_id', 'withdraw_status'], 'integer'],
             [['withdraw_amount'], 'number'],
+            [['withdraw_operation_id'], 'unique'],
+            [['withdraw_account_id'], 'exist', 'skipOnError' => true, 'targetClass' => Account::className(), 'targetAttribute' => ['withdraw_account_id' => 'account_id']],
             [['withdraw_card_id'], 'exist', 'skipOnError' => true, 'targetClass' => Card::className(), 'targetAttribute' => ['withdraw_card_id' => 'card_id']],
             [['withdraw_operation_id'], 'exist', 'skipOnError' => true, 'targetClass' => Operation::className(), 'targetAttribute' => ['withdraw_operation_id' => 'operation_id']],
-            [['withdraw_account_id'], 'exist', 'skipOnError' => true, 'targetClass' => Account::className(), 'targetAttribute' => ['withdraw_account_id' => 'account_id']],
         ];
     }
 

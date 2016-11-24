@@ -38,9 +38,10 @@ class Transfer extends \yii\db\ActiveRecord
             [['transfer_operation_id', 'transfer_out_account_id', 'transfer_into_account_id', 'transfer_type', 'transfer_amount'], 'required'],
             [['transfer_operation_id', 'transfer_out_account_id', 'transfer_into_account_id', 'transfer_type', 'transfer_status'], 'integer'],
             [['transfer_amount'], 'number'],
-            [['transfer_operation_id'], 'exist', 'skipOnError' => true, 'targetClass' => Operation::className(), 'targetAttribute' => ['transfer_operation_id' => 'operation_id']],
+            [['transfer_operation_id'], 'unique'],
             [['transfer_out_account_id'], 'exist', 'skipOnError' => true, 'targetClass' => Account::className(), 'targetAttribute' => ['transfer_out_account_id' => 'account_id']],
             [['transfer_into_account_id'], 'exist', 'skipOnError' => true, 'targetClass' => Account::className(), 'targetAttribute' => ['transfer_into_account_id' => 'account_id']],
+            [['transfer_operation_id'], 'exist', 'skipOnError' => true, 'targetClass' => Operation::className(), 'targetAttribute' => ['transfer_operation_id' => 'operation_id']],
         ];
     }
 

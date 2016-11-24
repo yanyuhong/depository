@@ -35,6 +35,7 @@ class Refund extends \yii\db\ActiveRecord
             [['refund_operation_id', 'refund_charge_id', 'refund_amount', 'refund_status'], 'required'],
             [['refund_operation_id', 'refund_charge_id', 'refund_status'], 'integer'],
             [['refund_amount'], 'number'],
+            [['refund_operation_id'], 'unique'],
             [['refund_charge_id'], 'exist', 'skipOnError' => true, 'targetClass' => Charge::className(), 'targetAttribute' => ['refund_charge_id' => 'charge_id']],
             [['refund_operation_id'], 'exist', 'skipOnError' => true, 'targetClass' => Operation::className(), 'targetAttribute' => ['refund_operation_id' => 'operation_id']],
         ];

@@ -20,11 +20,11 @@ use Yii;
  * @property string $operation_updated_at
  *
  * @property AccountLog[] $accountLogs
- * @property Charge[] $charges
+ * @property Charge $charge
  * @property Channel $operationChannel
- * @property Refund[] $refunds
- * @property Transfer[] $transfers
- * @property Withdraw[] $withdraws
+ * @property Refund $refund
+ * @property Transfer $transfer
+ * @property Withdraw $withdraw
  */
 class Operation extends \yii\db\ActiveRecord
 {
@@ -33,6 +33,9 @@ class Operation extends \yii\db\ActiveRecord
 
 
     const OPERATION_STATUS_RECEIVE = 1; //交易状态:接收
+    const OPERATION_STATUS_PROCESS = 2; //交易状态:处理中
+    const OPERATION_STATUS_SUCCESS = 3; //交易状态:成功
+    const OPERATION_STATUS_FAIL = 4; //交易状态:失败
 
     /**
      * @inheritdoc
@@ -90,6 +93,40 @@ class Operation extends \yii\db\ActiveRecord
         $this->operation_created_at = Time::now();
     }
 
+
+    public function query(){
+        if($this->operation_status == self::OPERATION_STATUS_RECEIVE || $this->operation_status == self::OPERATION_STATUS_PROCESS){
+            switch ($this->operation_type){
+                case self::OPERATION_TYPE_CHARGE:
+                    $this->charge->query();
+                    break;
+            }
+
+        }
+
+        return false;
+    }
+
+    public function updateStatus()
+    {
+        switch ($this->operation_type) {
+            case self::OPERATION_TYPE_CHARGE:
+                if ($this->charge->charge_status) {
+                    $this->operation_status = $this->charge->statusList[$this->charge->charge_status];
+                    $finishTime = $this->charge->getFinishTime();
+                    if($finishTime) {
+                        $this->operation_finished_at = $finishTime;
+                    }
+                    $this->operation_message = $this->charge->getMessage();
+                }
+                break;
+        }
+
+        if ($this->update() > 0) {
+            //todo: 回调
+        }
+    }
+
     //==========
     //next is find function
 
@@ -113,9 +150,9 @@ class Operation extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getCharges()
+    public function getCharge()
     {
-        return $this->hasMany(Charge::className(), ['charge_operation_id' => 'operation_id']);
+        return $this->hasOne(Charge::className(), ['charge_operation_id' => 'operation_id']);
     }
 
     /**
@@ -129,24 +166,24 @@ class Operation extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getRefunds()
+    public function getRefund()
     {
-        return $this->hasMany(Refund::className(), ['refund_operation_id' => 'operation_id']);
+        return $this->hasOne(Refund::className(), ['refund_operation_id' => 'operation_id']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getTransfers()
+    public function getTransfer()
     {
-        return $this->hasMany(Transfer::className(), ['transfer_operation_id' => 'operation_id']);
+        return $this->hasOne(Transfer::className(), ['transfer_operation_id' => 'operation_id']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getWithdraws()
+    public function getWithdraw()
     {
-        return $this->hasMany(Withdraw::className(), ['withdraw_operation_id' => 'operation_id']);
+        return $this->hasOne(Withdraw::className(), ['withdraw_operation_id' => 'operation_id']);
     }
 }

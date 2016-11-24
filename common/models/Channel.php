@@ -17,7 +17,6 @@ use yii\web\IdentityInterface;
  * @property string $channel_alipay_appId
  * @property string $channel_alipay_rsaPrivateKey
  * @property string $channel_alipay_rsaPublicKey
- * @property string $channel_alipay_publicKey
  * @property string $channel_created_at
  * @property string $channel_updated_at
  *
@@ -41,7 +40,7 @@ class Channel extends \yii\db\ActiveRecord implements IdentityInterface
     {
         return [
             [['channel_key', 'channel_secret', 'channel_name'], 'required'],
-            [['channel_alipay_rsaPrivateKey', 'channel_alipay_rsaPublicKey', 'channel_alipay_publicKey'], 'string'],
+            [['channel_alipay_rsaPrivateKey', 'channel_alipay_rsaPublicKey'], 'string'],
             [['channel_created_at', 'channel_updated_at'], 'safe'],
             [['channel_key', 'channel_secret'], 'string', 'max' => 64],
             [['channel_name', 'channel_alipay_appId'], 'string', 'max' => 255],
@@ -63,7 +62,6 @@ class Channel extends \yii\db\ActiveRecord implements IdentityInterface
             'channel_alipay_appId' => 'Channel Alipay App ID',
             'channel_alipay_rsaPrivateKey' => 'Channel Alipay Rsa Private Key',
             'channel_alipay_rsaPublicKey' => 'Channel Alipay Rsa Public Key',
-            'channel_alipay_publicKey' => 'Channel Alipay Public Key',
             'channel_created_at' => 'Channel Created At',
             'channel_updated_at' => 'Channel Updated At',
         ];
