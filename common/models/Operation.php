@@ -94,9 +94,10 @@ class Operation extends \yii\db\ActiveRecord
     }
 
 
-    public function query(){
-        if($this->operation_status == self::OPERATION_STATUS_RECEIVE || $this->operation_status == self::OPERATION_STATUS_PROCESS){
-            switch ($this->operation_type){
+    public function depthQuery()
+    {
+        if (in_array($this->operation_status, [self::OPERATION_STATUS_RECEIVE, self::OPERATION_STATUS_PROCESS])) {
+            switch ($this->operation_type) {
                 case self::OPERATION_TYPE_CHARGE:
                     $this->charge->query();
                     break;
@@ -114,7 +115,7 @@ class Operation extends \yii\db\ActiveRecord
                 if ($this->charge->charge_status) {
                     $this->operation_status = $this->charge->statusList[$this->charge->charge_status];
                     $finishTime = $this->charge->getFinishTime();
-                    if($finishTime) {
+                    if ($finishTime) {
                         $this->operation_finished_at = $finishTime;
                     }
                     $this->operation_message = $this->charge->getMessage();
@@ -122,8 +123,10 @@ class Operation extends \yii\db\ActiveRecord
                 break;
         }
 
-        if ($this->update() > 0) {
-            //todo: 回调
+        if ($this->update()) {
+            if (in_array($this->operation_type, [self::OPERATION_STATUS_SUCCESS, self::OPERATION_STATUS_FAIL])) {
+                //todo: 回调
+            }
         }
     }
 

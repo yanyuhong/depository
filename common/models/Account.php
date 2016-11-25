@@ -24,6 +24,11 @@ use Yii;
  */
 class Account extends \yii\db\ActiveRecord
 {
+
+    const ACCOUNT_TYPE_COMMON = 1; //帐户类型:普通帐户
+
+    const ACCOUNT_STATUS_NORMAL = 1; //帐户状态:正常
+
     /**
      * @inheritdoc
      */
@@ -65,9 +70,31 @@ class Account extends \yii\db\ActiveRecord
             'account_updated_at' => 'Account Updated At',
         ];
     }
+    //=====================
+    //next is model function
+    public function initNew($channel_id, $account_key)
+    {
+        $this->account_channel_id = $channel_id;
+        $this->account_key = $account_key;
+        $this->account_type = self::ACCOUNT_TYPE_COMMON;
+        $this->account_status = self::ACCOUNT_STATUS_NORMAL;
+        $this->account_created_at = Time::now();
+    }
 
-//==================
-//next is search function
+    public function changeAmount($operation, $amount)
+    {
+        $account_log = new AccountLog();
+        $account_log->initNew($this->account_id, $operation, AccountLog::ACCOUNT_LOG_TYPE_INTO, $amount, $this->account_amount);
+        $account_log->save();
+        if ($amount < 0) {
+            $this->account_freeze_amount += $amount;
+        }
+        $this->account_amount = $account_log->account_log_changed_amount;
+        $this->save();
+    }
+
+    //==================
+    //next is find function
     public static function findByChannelKey($channel_id, $account_key)
     {
         return static::find()
@@ -75,15 +102,6 @@ class Account extends \yii\db\ActiveRecord
                 "account_channel_id" => $channel_id,
                 "account_key" => $account_key,
             ])->one();
-    }
-//=====================
-//next is model function
-    public function initNew($channel_id, $account_key)
-    {
-        $this->account_channel_id = $channel_id;
-        $this->account_key = $account_key;
-        $this->account_type = 1;
-        $this->account_created_at = Time::now();
     }
 
     /**

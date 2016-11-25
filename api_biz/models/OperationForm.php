@@ -47,7 +47,7 @@ class OperationForm extends Operation
             [['title'], 'string', 'max' => 255],
             [['detail'], 'string', 'max' => 128],
             [['express'], 'integer', 'min' => 60, 'max' => 1296000],
-            [['amount'], 'number'],
+            [['amount'], 'number', 'min' => 0.01],
             ['payment', 'in', 'range' => array_keys(Charge::$paymentList)],
             ['goodsType', 'in', 'range' => Charge::$goodsTypeList]
         ];
@@ -120,8 +120,14 @@ class OperationForm extends Operation
         $this->accountModel = $account;
     }
 
-    public function queryStatus(){
-        $this->operationModel->query();
+    public function queryStatus()
+    {
+        if (in_array($this->operationModel->operation_type, [self::OPERATION_STATUS_RECEIVE, self::OPERATION_STATUS_PROCESS])) {
+            if (in_array($this->operationModel->operation_type, [self::OPERATION_TYPE_CHARGE])) {
+                $this->operationModel->depthQuery();
+                $this->searchByNum();
+            }
+        }
     }
 
     //===========

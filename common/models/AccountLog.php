@@ -2,6 +2,7 @@
 
 namespace common\models;
 
+use common\tools\Time;
 use Yii;
 
 /**
@@ -22,6 +23,11 @@ use Yii;
  */
 class AccountLog extends \yii\db\ActiveRecord
 {
+
+    const ACCOUNT_LOG_TYPE_INTO = 1;//资金变动类型:转入
+    const ACCOUNT_LOG_TYPE_OUT = 2;//资金变动类型:转出
+    const ACCOUNT_LOG_TYPE_FREEZE = 3;//资金变动类型:冻结
+
     /**
      * @inheritdoc
      */
@@ -63,6 +69,21 @@ class AccountLog extends \yii\db\ActiveRecord
         ];
     }
 
+    //===========
+    //next is model function
+    public function initNew($account, $operation, $type, $amount, $original)
+    {
+        $this->account_log_account_id = $account;
+        $this->account_log_operation_id = $operation;
+        $this->account_log_type = $type;
+        $this->account_log_amount = $amount;
+        $this->account_log_original_amount = $original;
+        $this->account_log_changed_amount = $original + $amount;
+        $this->account_log_created_at = Time::now();
+    }
+
+    //=============
+    //next is fk function
     /**
      * @return \yii\db\ActiveQuery
      */

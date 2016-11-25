@@ -44,7 +44,7 @@ class Alipay extends \yii\db\ActiveRecord
         "WAIT_BUYER_PAY" => Charge::CHARGE_STATUS_WAIT,
         "TRADE_CLOSED" => Charge::CHARGE_STATUS_CLOSE,
         "TRADE_SUCCESS" => Charge::CHARGE_STATUS_SUCCESS,
-        "TRADE_FINISHED" => Charge::CHARGE_STATUS_FINISH,
+        "TRADE_FINISHED" => Charge::CHARGE_STATUS_SUCCESS,
         self::TRADE_NOT_EXIST => Charge::CHARGE_STATUS_CLOSE
     ];
 
@@ -117,24 +117,27 @@ class Alipay extends \yii\db\ActiveRecord
     /**
      * @param $charge Charge
      */
-    public function initNew($charge){
+    public function initNew($charge)
+    {
         $this->alipay_charge_id = $charge->charge_id;
         $this->alipay_out_trade_no = Encrypt::md5Str($charge->charge_id, 'Alipay');
         $this->alipay_body = $charge->charge_detail;
         $this->alipay_subject = $charge->charge_title;
-        $this->alipay_timeout_express = ((int)(($charge->charge_express + 30)/60)) . 'm';
+        $this->alipay_timeout_express = ((int)(($charge->charge_express + 30) / 60)) . 'm';
         $this->alipay_total_amount = $charge->charge_amount;
         $this->alipay_goods_type = $this->goodsTypeList[$charge->charge_goods_type];
     }
 
-    public function pay(){
+    public function pay()
+    {
         $alipay_sdk = new \common\components\Alipay($this->alipayCharge->chargeOperation->operationChannel);
         $orderString = $alipay_sdk->getOrderString($this);
         return $orderString;
     }
 
-    public function query(){
-        if($this->alipay_trade_status == "" || $this->alipay_trade_status == self::ALIYUN_STATUS_WAIT){
+    public function query()
+    {
+        if (in_array($this->alipay_trade_status, ["", self::ALIYUN_STATUS_WAIT])) {
             $alipay_sdk = new \common\components\Alipay($this->alipayCharge->chargeOperation->operationChannel);
             $alipay_sdk->queryTrade($this);
         }
@@ -142,8 +145,9 @@ class Alipay extends \yii\db\ActiveRecord
         return true;
     }
 
-    public function updateStatus($response){
-        if($response->code == '10000'){
+    public function updateStatus($response)
+    {
+        if ($response->code == '10000') {
             $this->alipay_trade_no = $response->trade_no;
             $this->alipay_buyer_logon_id = $response->buyer_logon_id;
             $this->alipay_trade_status = $response->trade_status;
@@ -153,16 +157,16 @@ class Alipay extends \yii\db\ActiveRecord
             $this->alipay_invoice_amount = $response->invoice_amount;
             $this->alipay_send_pay_date = $response->send_pay_date;
             $this->alipay_response = serialize($response);
-        }elseif($response->code == '40004' && $response->sub_code == 'ACQ.TRADE_NOT_EXIST'){
-            if($this->alipayCharge->charge_express_time < Time::now()){
+        } elseif ($response->code == '40004' && $response->sub_code == 'ACQ.TRADE_NOT_EXIST') {
+            if ($this->alipayCharge->charge_express_time < Time::now()) {
                 $this->alipay_trade_status = self::TRADE_NOT_EXIST;
                 $this->alipay_response = serialize($response);
             }
-        }else{
+        } else {
 
         }
 
-        if($this->update()){
+        if ($this->update()) {
             $this->alipayCharge->updateStatus();
         }
     }

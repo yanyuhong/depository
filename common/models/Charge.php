@@ -33,10 +33,9 @@ class Charge extends \yii\db\ActiveRecord
     const CHARGE_TYPE_ALIPAY = 3;//支付方式:支付宝app
 
     const CHARGE_STATUS_RECEIVE = 1;//充值状态:接收
-    const CHARGE_STATUS_WAIT = 2;//充值状态:接收
+    const CHARGE_STATUS_WAIT = 2;//充值状态:等待支付
     const CHARGE_STATUS_SUCCESS = 3;//充值状态:成功
     const CHARGE_STATUS_CLOSE = 4;//充值状态:关闭
-    const CHARGE_STATUS_FINISH = 5;//充值状态:完成
 
     public static $goodsTypeList = [
         self::CHARGE_GOODS_TYPE_VIRTUAL, self::CHARGE_GOODS_TYPE_ACTUAL
@@ -47,7 +46,6 @@ class Charge extends \yii\db\ActiveRecord
         self::CHARGE_STATUS_WAIT => Operation::OPERATION_STATUS_PROCESS,
         self::CHARGE_STATUS_SUCCESS => Operation::OPERATION_STATUS_SUCCESS,
         self::CHARGE_STATUS_CLOSE => Operation::OPERATION_STATUS_FAIL,
-        self::CHARGE_STATUS_FINISH => Operation::OPERATION_STATUS_SUCCESS,
     ];
 
     public static $paymentList = [
@@ -136,11 +134,10 @@ class Charge extends \yii\db\ActiveRecord
 
     public function query()
     {
-        if($this->charge_status == self::CHARGE_STATUS_RECEIVE || $this->charge_status == self::CHARGE_STATUS_WAIT){
+        if (in_array($this->charge_status, [self::CHARGE_STATUS_RECEIVE, self::CHARGE_STATUS_WAIT])) {
             switch ($this->charge_type) {
                 case self::CHARGE_TYPE_ALIPAY:
-                    $alipay = $this->alipay;
-                    $alipay->query();
+                    $this->alipay->query();
                     break;
             }
         }
@@ -159,6 +156,9 @@ class Charge extends \yii\db\ActiveRecord
         }
 
         if ($this->update()) {
+            if ($this->charge_status == self::CHARGE_STATUS_SUCCESS) {
+                $this->chargeAccount->changeAmount($this->charge_operation_id, $this->charge_amount);
+            }
             $this->chargeOperation->updateStatus();
         }
     }
@@ -173,7 +173,8 @@ class Charge extends \yii\db\ActiveRecord
         return "";
     }
 
-    public function getMessage(){
+    public function getMessage()
+    {
         switch ($this->charge_type) {
             case self::CHARGE_TYPE_ALIPAY:
                 return unserialize($this->alipay->alipay_response)->msg;
