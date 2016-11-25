@@ -123,7 +123,7 @@ class Alipay extends \yii\db\ActiveRecord
         $this->alipay_out_trade_no = Encrypt::md5Str($charge->charge_id, 'Alipay');
         $this->alipay_body = $charge->charge_detail;
         $this->alipay_subject = $charge->charge_title;
-        $this->alipay_timeout_express = ((int)(($charge->charge_express + 30) / 60)) . 'm';
+        $this->alipay_timeout_express = ((int)(($charge->charge_express - 1) / 60) + 1) . 'm';
         $this->alipay_total_amount = $charge->charge_amount;
         $this->alipay_goods_type = $this->goodsTypeList[$charge->charge_goods_type];
     }

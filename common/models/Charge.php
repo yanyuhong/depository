@@ -123,9 +123,7 @@ class Charge extends \yii\db\ActiveRecord
                 $alipay->initNew($this);
                 if ($alipay->save()) {
                     $orderString = $alipay->pay();
-                    return [
-                        "orderString" => (string)$orderString
-                    ];
+                    return (string)$orderString;
                 }
                 break;
         }

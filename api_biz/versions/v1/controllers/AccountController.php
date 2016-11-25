@@ -43,7 +43,7 @@ class AccountController extends ApiController
         }
         $accountForm = $accountForm->searchByKey();
         if (!$accountForm) {
-            $this->renderJsonFailed('42002', $accountForm->getErrors());
+            return $this->renderJsonFailed('42002');
         }
         $data = $accountForm->selectList();
         return $this->renderJsonSuccess($data);
@@ -60,7 +60,7 @@ class AccountController extends ApiController
         }
 
         if (!$accountForm->addAccount()) {
-            return $this->renderJsonFailed('42001', $accountForm->getErrors());
+            return $this->renderJsonFailed('42001');
         }
         return $this->renderJsonSuccess();
     }
