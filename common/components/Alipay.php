@@ -47,8 +47,8 @@ class Alipay
             "goods_type" => (string)$model->alipay_goods_type,
         ];
         $request->setBizContent(json_encode($biz_content));
-        if(isset(\Yii::$app->params['url']['other']) && \Yii::$app->params['url']['other'] ) {
-            $request->setNotifyUrl(\Yii::$app->params['url']['other'] . '/v1/alipay/trade-status');
+        if(isset(\Yii::$app->params['url']['api_other']) && \Yii::$app->params['url']['api_other'] ) {
+            $request->setNotifyUrl(\Yii::$app->params['url']['api_other'] . '/v1/alipay/trade-status');
         }
         $orderString = $this->aop->sdkExecute($request);
         return $orderString;
