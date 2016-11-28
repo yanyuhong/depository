@@ -5,7 +5,7 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model boss\models\ChannelForm */
 
-$this->title = 'Update Channel Form: ' . $model->channel_id;
+$this->title = '修改渠道: ' . $model->channel_name;
 $this->params['breadcrumbs'][] = ['label' => 'Channel Forms', 'url' => ['index']];
 $this->params['breadcrumbs'][] = ['label' => $model->channel_id, 'url' => ['view', 'id' => $model->channel_id]];
 $this->params['breadcrumbs'][] = 'Update';

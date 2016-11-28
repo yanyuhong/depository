@@ -20,16 +20,12 @@ $this->params['breadcrumbs'][] = $this->title;
     </p>
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
-//        'filterModel' => $searchModel,
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
 
-            'channel_id',
-            'channel_key',
-            'channel_secret',
             'channel_name',
+            'channel_key',
             'channel_created_at',
-            // 'channel_updated_at',
 
             ['class' => 'yii\grid\ActionColumn',
                 'header' => '操作',

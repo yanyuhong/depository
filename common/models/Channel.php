@@ -72,9 +72,13 @@ class Channel extends \yii\db\ActiveRecord implements IdentityInterface
 
     public function initNew($name){
         $this->channel_name = $name;
-        $this->channel_key = Encrypt::getNum($name);
+        $this->channel_key = Encrypt::getOrderNo();
         $this->channel_secret = Encrypt::md5Str($name, 'channel');
         $this->channel_created_at = Time::now();
+    }
+
+    public function checkAlipay(){
+        return $this->channel_alipay_appId && $this->channel_alipay_rsaPrivateKey && $this->channel_alipay_rsaPublicKey;
     }
 
     //==========
