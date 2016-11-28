@@ -21,7 +21,7 @@ return [
             'controllerMap' => [
                 'assignment' => [
                     'class' => 'mdm\admin\controllers\AssignmentController',
-                    'userClassName' => 'common\models\Manage',
+                    'userClassName' => 'common\models\Channel',
                     'idField' => 'id'
                 ]
             ],
@@ -35,8 +35,8 @@ return [
     ],
     'components' => [
         'user' => [
-            'identityClass' => 'common\models\Manage',
-            'enableAutoLogin' => true,
+            'identityClass' => 'common\models\Channel',
+            'enableAutoLogin' => false,
         ],
         'authManager' => [
             'class' => 'yii\rbac\DbManager',

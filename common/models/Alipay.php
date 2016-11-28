@@ -171,6 +171,18 @@ class Alipay extends \yii\db\ActiveRecord
         }
     }
 
+    //=======
+    //next is find function
+    /**
+     * @param $out_trade_no
+     * @return array|null|\yii\db\ActiveRecord|self
+     */
+    public static function findByOutTradeNo($out_trade_no){
+        return static::find()
+            ->where(['alipay_out_trade_no' => $out_trade_no])
+            ->one();
+    }
+
     //========
     //next is fk function
 
