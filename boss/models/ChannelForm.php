@@ -19,7 +19,8 @@ class ChannelForm extends Channel
     public function rules()
     {
         return [
-            [['channel_name', 'channel_alipay_appId', 'channel_alipay_rsaPrivateKey' , 'channel_alipay_rsaPublicKey'], 'trim'],
+            [['channel_name', 'channel_alipay_appId', 'channel_alipay_rsaPrivateKey' , 'channel_alipay_rsaPublicKey',
+                'channel_wechat_appid', 'channel_wechat_mchid', 'channel_wechat_key', 'channel_wechat_sslcert', 'channel_wechat_sslkey'], 'trim'],
             [['channel_name'], 'required'],
             [['channel_name'], 'string', 'max' => 255],
             [['channel_name'], 'unique'],
@@ -43,7 +44,7 @@ class ChannelForm extends Channel
             'channel_wechat_mchid' => '微信商户ID',
             'channel_wechat_key' => '商户支付密钥',
             'channel_wechat_sslcert' => '证书CERT(仅退款、撤销订单时需要)',
-            'channel_wechat_sslkey' => '证书KEY(仅退款、撤销订单时需要)',
+            'channel_wechat_sslkey' => '证书(仅退款、撤销订单时需要)',
             'channel_created_at' => '创建时间',
             'channel_updated_at' => '修改时间',
         ];
