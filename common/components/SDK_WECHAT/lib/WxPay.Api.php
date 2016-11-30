@@ -88,7 +88,7 @@ class WxPayApi
         $inputObj->SetAppid($this->config->APPID);
         $inputObj->SetPartnerid($this->config->MCHID);
         $inputObj->SetNoncestr(self::getNonceStr());
-        $inputObj->SetTimestamp(self::getMillisecond());
+        $inputObj->SetTimestamp((string)time());
         $inputObj->SetSign();
 
         return $inputObj->GetValues();
