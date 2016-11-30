@@ -34,9 +34,6 @@ class Alipay
      */
     public function getOrderString($model)
     {
-
-        $request = new \AlipayTradeAppPayRequest();
-
         $biz_content = [
             "body" => (string)$model->alipay_body,
             "subject" => (string)$model->alipay_subject,
@@ -46,6 +43,8 @@ class Alipay
             "produce_code" => "QUICK_MSECURITY_PAY",
             "goods_type" => (string)$model->alipay_goods_type,
         ];
+
+        $request = new \AlipayTradeAppPayRequest();
         $request->setBizContent(json_encode($biz_content));
         if(isset(\Yii::$app->params['url']['api_other']) && \Yii::$app->params['url']['api_other'] ) {
             $request->setNotifyUrl(\Yii::$app->params['url']['api_other'] . '/v1/alipay/trade-status');

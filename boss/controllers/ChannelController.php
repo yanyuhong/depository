@@ -113,6 +113,25 @@ class ChannelController extends Controller
     }
 
     /**
+     * Updates an existing ChannelForm model with wechat.
+     * If update is successful, the browser will be redirected to the 'view' page.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionWechat($id)
+    {
+        $model = $this->findModel($id);
+
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            return $this->redirect(['view', 'id' => $model->channel_id]);
+        } else {
+            return $this->render('wechat', [
+                'model' => $model,
+            ]);
+        }
+    }
+
+    /**
      * Deletes an existing ChannelForm model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id

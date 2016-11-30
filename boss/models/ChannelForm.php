@@ -39,6 +39,11 @@ class ChannelForm extends Channel
             'channel_alipay_appId' => '支付宝appId',
             'channel_alipay_rsaPrivateKey' => '支付宝私钥',
             'channel_alipay_rsaPublicKey' => '支付宝公钥',
+            'channel_wechat_appid' => '微信应用Appid',
+            'channel_wechat_mchid' => '微信商户ID',
+            'channel_wechat_key' => '商户支付密钥',
+            'channel_wechat_sslcert' => '证书CERT(仅退款、撤销订单时需要)',
+            'channel_wechat_sslkey' => '证书KEY(仅退款、撤销订单时需要)',
             'channel_created_at' => '创建时间',
             'channel_updated_at' => '修改时间',
         ];

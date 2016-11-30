@@ -23,6 +23,7 @@ class OperationForm extends Operation
     public $detail;
     public $goodsType;
     public $express;
+    public $spbillIp;
 
     /**
      * @var Operation
@@ -41,12 +42,13 @@ class OperationForm extends Operation
     public function rules()
     {
         return [
-            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express'], 'trim'],
-            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express'], 'required'],
+            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp'], 'trim'],
+            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp'], 'required'],
             [['num', 'account'], 'string', 'max' => 64],
+            [['spbillId'], 'string', 'max' => 16],
             [['title'], 'string', 'max' => 255],
             [['detail'], 'string', 'max' => 128],
-            [['express'], 'integer', 'min' => 60, 'max' => 1296000],
+            [['express'], 'integer', 'min' => 300, 'max' => 1296000],
             [['amount'], 'number', 'min' => 0.01],
             ['payment', 'in', 'range' => array_keys(Charge::$paymentList)],
             ['goodsType', 'in', 'range' => Charge::$goodsTypeList]
@@ -67,6 +69,7 @@ class OperationForm extends Operation
             'detail' => '商品描述',
             'goodsType' => '商品类型',
             'express' => '等待时间',
+            'spbillIp' => '用户端IP',
         ];
     }
 
@@ -79,7 +82,7 @@ class OperationForm extends Operation
 
     public function operationChargeRules()
     {
-        return ['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express'];
+        return ['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp'];
     }
 
     //==========
@@ -96,7 +99,8 @@ class OperationForm extends Operation
                 $this->title,
                 $this->detail,
                 $this->goodsType,
-                $this->express
+                $this->express,
+                $this->spbillIp
             );
             if ($charge->save()) {
                 $this->payData = $charge->getPayData();

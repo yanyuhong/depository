@@ -24,6 +24,13 @@ $this->params['breadcrumbs'][] = $this->title;
             echo Html::a('开通支付宝支付', ['alipay', 'id' => $model->channel_id], ['class' => 'btn btn-primary']);
         }
         ?>
+        <?php
+        if ($model->checkWechat()) {
+            echo Html::a('修改微信支付', ['wechat', 'id' => $model->channel_id], ['class' => 'btn btn-primary']);
+        } else {
+            echo Html::a('开通微信支付', ['wechat', 'id' => $model->channel_id], ['class' => 'btn btn-primary']);
+        }
+        ?>
     </p>
 
     <?= DetailView::widget([

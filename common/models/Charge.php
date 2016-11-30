@@ -19,18 +19,21 @@ use Yii;
  * @property integer $charge_goods_type
  * @property integer $charge_express
  * @property string $charge_express_time
+ * @property string $charge_spbill_ip
  *
  * @property Alipay $alipay
  * @property Account $chargeAccount
  * @property Operation $chargeOperation
  * @property Refund[] $refunds
+ * @property Wechat $wechat
  */
 class Charge extends \yii\db\ActiveRecord
 {
     const CHARGE_GOODS_TYPE_VIRTUAL = 1; //商品类型:虚拟商品
     const CHARGE_GOODS_TYPE_ACTUAL = 2; //商品类型:实物商品
 
-    const CHARGE_TYPE_ALIPAY = 3;//支付方式:支付宝app
+    const CHARGE_TYPE_WECHAT_APP = 1;//支付方式:微信app
+    const CHARGE_TYPE_ALIPAY = 3;//支付方式:支付宝
 
     const CHARGE_STATUS_RECEIVE = 1;//充值状态:接收
     const CHARGE_STATUS_WAIT = 2;//充值状态:等待支付
@@ -49,6 +52,10 @@ class Charge extends \yii\db\ActiveRecord
     ];
 
     public static $paymentList = [
+        "wechat" => [
+            'type' => 1,
+            'name' => "微信app",
+        ],
         "alipay" => [
             'type' => 3,
             'name' => "支付宝",
@@ -63,9 +70,6 @@ class Charge extends \yii\db\ActiveRecord
         return 'charge';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function rules()
     {
         return [
@@ -74,6 +78,7 @@ class Charge extends \yii\db\ActiveRecord
             [['charge_amount'], 'number'],
             [['charge_express_time'], 'safe'],
             [['charge_title', 'charge_detail'], 'string', 'max' => 255],
+            [['charge_spbill_ip'], 'string', 'max' => 16],
             [['charge_operation_id'], 'unique'],
             [['charge_account_id'], 'exist', 'skipOnError' => true, 'targetClass' => Account::className(), 'targetAttribute' => ['charge_account_id' => 'account_id']],
             [['charge_operation_id'], 'exist', 'skipOnError' => true, 'targetClass' => Operation::className(), 'targetAttribute' => ['charge_operation_id' => 'operation_id']],
@@ -97,12 +102,13 @@ class Charge extends \yii\db\ActiveRecord
             'charge_goods_type' => 'Charge Goods Type',
             'charge_express' => 'Charge Express',
             'charge_express_time' => 'Charge Express Time',
+            'charge_spbill_ip' => 'Charge Spbill Ip',
         ];
     }
 
     //=======
     //next is model function
-    public function initNew($operation, $account, $type, $amount, $title, $detail, $goodsType, $express)
+    public function initNew($operation, $account, $type, $amount, $title, $detail, $goodsType, $express, $spbillIp)
     {
         $this->charge_operation_id = $operation;
         $this->charge_account_id = $account;
@@ -113,11 +119,20 @@ class Charge extends \yii\db\ActiveRecord
         $this->charge_goods_type = $goodsType;
         $this->charge_express = $express;
         $this->charge_express_time = Time::after($express);
+        $this->charge_spbill_ip = $spbillIp;
     }
 
     public function getPayData()
     {
         switch ($this->charge_type) {
+            case self::CHARGE_TYPE_WECHAT_APP:
+                $wechat = new Wechat();
+                $wechat->initNew($this);
+                if($wechat->save()){
+                    $orderMap = $wechat->pay();
+                    return $orderMap;
+                }
+                break;
             case self::CHARGE_TYPE_ALIPAY:
                 $alipay = new Alipay();
                 $alipay->initNew($this);
@@ -137,6 +152,9 @@ class Charge extends \yii\db\ActiveRecord
                 case self::CHARGE_TYPE_ALIPAY:
                     $this->alipay->query();
                     break;
+                case self::CHARGE_TYPE_WECHAT_APP:
+                    $this->wechat->query();
+                    break;
             }
         }
         $this->chargeOperation->updateStatus();
@@ -149,6 +167,11 @@ class Charge extends \yii\db\ActiveRecord
             case self::CHARGE_TYPE_ALIPAY:
                 if ($this->alipay->alipay_trade_status) {
                     $this->charge_status = $this->alipay->statusList[$this->alipay->alipay_trade_status];
+                }
+                break;
+            case self::CHARGE_TYPE_WECHAT_APP:
+                if($this->wechat->wechat_trade_state){
+                    $this->charge_status = $this->wechat->stateList[$this->wechat->wechat_trade_state];
                 }
                 break;
         }
@@ -167,18 +190,32 @@ class Charge extends \yii\db\ActiveRecord
             case self::CHARGE_TYPE_ALIPAY:
                 return $this->alipay->alipay_send_pay_date;
                 break;
+            case self::CHARGE_TYPE_WECHAT_APP:
+                if($this->wechat->wechat_time_end) {
+                    return Time::format($this->wechat->wechat_time_end);
+                }
+                break;
         }
-        return "";
+        return null;
     }
 
     public function getMessage()
     {
         switch ($this->charge_type) {
             case self::CHARGE_TYPE_ALIPAY:
-                return unserialize($this->alipay->alipay_response)->msg;
+                if ($this->alipay->alipay_response) {
+                    return unserialize($this->alipay->alipay_response)->msg;
+                }
+                break;
+            case self::CHARGE_TYPE_WECHAT_APP:
+                if($this->wechat->wechat_response){
+                    if(isset(unserialize($this->wechat->wechat_response)['trade_state_desc'])){
+                        return unserialize($this->wechat->wechat_response)['trade_state_desc'];
+                    }
+                }
                 break;
         }
-        return "";
+        return null;
     }
 
     //=======
@@ -213,5 +250,13 @@ class Charge extends \yii\db\ActiveRecord
     public function getRefunds()
     {
         return $this->hasMany(Refund::className(), ['refund_charge_id' => 'charge_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getWechat()
+    {
+        return $this->hasOne(Wechat::className(), ['wechat_charge_id' => 'charge_id']);
     }
 }

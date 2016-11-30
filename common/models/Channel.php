@@ -17,6 +17,11 @@ use yii\web\IdentityInterface;
  * @property string $channel_alipay_appId
  * @property string $channel_alipay_rsaPrivateKey
  * @property string $channel_alipay_rsaPublicKey
+ * @property string $channel_wechat_appid
+ * @property string $channel_wechat_mchid
+ * @property string $channel_wechat_key
+ * @property string $channel_wechat_sslcert
+ * @property string $channel_wechat_sslkey
  * @property string $channel_created_at
  * @property string $channel_updated_at
  *
@@ -40,10 +45,10 @@ class Channel extends \yii\db\ActiveRecord implements IdentityInterface
     {
         return [
             [['channel_key', 'channel_secret', 'channel_name'], 'required'],
-            [['channel_alipay_rsaPrivateKey', 'channel_alipay_rsaPublicKey'], 'string'],
+            [['channel_alipay_rsaPrivateKey', 'channel_alipay_rsaPublicKey', 'channel_wechat_sslcert', 'channel_wechat_sslkey'], 'string'],
             [['channel_created_at', 'channel_updated_at'], 'safe'],
             [['channel_key', 'channel_secret'], 'string', 'max' => 64],
-            [['channel_name', 'channel_alipay_appId'], 'string', 'max' => 255],
+            [['channel_name', 'channel_alipay_appId', 'channel_wechat_appid', 'channel_wechat_mchid', 'channel_wechat_key'], 'string', 'max' => 255],
             [['channel_key'], 'unique'],
             [['channel_name'], 'unique'],
         ];
@@ -62,10 +67,16 @@ class Channel extends \yii\db\ActiveRecord implements IdentityInterface
             'channel_alipay_appId' => 'Channel Alipay App ID',
             'channel_alipay_rsaPrivateKey' => 'Channel Alipay Rsa Private Key',
             'channel_alipay_rsaPublicKey' => 'Channel Alipay Rsa Public Key',
+            'channel_wechat_appid' => 'Channel Wechat Appid',
+            'channel_wechat_mchid' => 'Channel Wechat Mchid',
+            'channel_wechat_key' => 'Channel Wechat Key',
+            'channel_wechat_sslcert' => 'Channel Wechat Sslcert',
+            'channel_wechat_sslkey' => 'Channel Wechat Sslkey',
             'channel_created_at' => 'Channel Created At',
             'channel_updated_at' => 'Channel Updated At',
         ];
     }
+
 
     //==========
     //next is model function
@@ -79,6 +90,10 @@ class Channel extends \yii\db\ActiveRecord implements IdentityInterface
 
     public function checkAlipay(){
         return $this->channel_alipay_appId && $this->channel_alipay_rsaPrivateKey && $this->channel_alipay_rsaPublicKey;
+    }
+
+    public function checkWechat(){
+        return $this->channel_wechat_appid && $this->channel_wechat_mchid && $this->channel_wechat_key;
     }
 
     //==========

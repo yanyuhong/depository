@@ -41,10 +41,10 @@ class Alipay extends \yii\db\ActiveRecord
     const ALIYUN_STATUS_FINISH = "TRADE_FINISHED"; //订单状态:交易完成
 
     public $statusList = [
-        "WAIT_BUYER_PAY" => Charge::CHARGE_STATUS_WAIT,
-        "TRADE_CLOSED" => Charge::CHARGE_STATUS_CLOSE,
-        "TRADE_SUCCESS" => Charge::CHARGE_STATUS_SUCCESS,
-        "TRADE_FINISHED" => Charge::CHARGE_STATUS_SUCCESS,
+        self::ALIYUN_STATUS_WAIT => Charge::CHARGE_STATUS_WAIT,
+        self::ALIYUN_STATUS_CLOSED => Charge::CHARGE_STATUS_CLOSE,
+        self::ALIYUN_STATUS_SUCCESS => Charge::CHARGE_STATUS_SUCCESS,
+        self::ALIYUN_STATUS_FINISH => Charge::CHARGE_STATUS_SUCCESS,
         self::TRADE_NOT_EXIST => Charge::CHARGE_STATUS_CLOSE
     ];
 
