@@ -46,7 +46,7 @@ class Alipay
 
         $request = new \AlipayTradeAppPayRequest();
         $request->setBizContent(json_encode($biz_content));
-        if(isset(\Yii::$app->params['url']['api_other']) && \Yii::$app->params['url']['api_other'] ) {
+        if (isset(\Yii::$app->params['url']['api_other']) && \Yii::$app->params['url']['api_other']) {
             $request->setNotifyUrl(\Yii::$app->params['url']['api_other'] . '/v1/alipay/trade-status');
         }
         $orderString = $this->aop->sdkExecute($request);
@@ -56,7 +56,8 @@ class Alipay
     /**
      * @param $model \common\models\Alipay
      */
-    public function queryTrade($model){
+    public function queryTrade($model)
+    {
         $request = new \AlipayTradeQueryRequest();
 
         $biz_content = [
@@ -67,11 +68,35 @@ class Alipay
 
         $response = $this->aop->execute($request);
 
-        $response = isset($response->alipay_trade_query_response)?$response->alipay_trade_query_response:null;
+        $response = isset($response->alipay_trade_query_response) ? $response->alipay_trade_query_response : null;
 
-        if($response && isset($response->code)){
+        if ($response && isset($response->code)) {
             $model->updateStatus($response);
         }
+    }
+
+    /**
+     * @param $model \common\models\Alipay
+     */
+    public function close($model)
+    {
+        $request = new \AlipayTradeCloseRequest();
+
+        $biz_content = [
+            "out_trade_no" => (string)$model->alipay_out_trade_no,
+        ];
+
+        $request->setBizContent(json_encode($biz_content));
+
+        $response = $this->aop->execute($request);
+
+        $response = isset($response->alipay_trade_close_response) ? $response->alipay_trade_close_response : null;
+
+        if ($response && isset($response->code)) {
+            return $response;
+        }
+
+        return false;
     }
 
 }

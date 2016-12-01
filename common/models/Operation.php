@@ -93,13 +93,25 @@ class Operation extends \yii\db\ActiveRecord
         $this->operation_created_at = Time::now();
     }
 
-
     public function depthQuery()
     {
         if (in_array($this->operation_status, [self::OPERATION_STATUS_RECEIVE, self::OPERATION_STATUS_PROCESS])) {
             switch ($this->operation_type) {
                 case self::OPERATION_TYPE_CHARGE:
                     $this->charge->query();
+                    break;
+            }
+
+        }
+
+        return false;
+    }
+
+    public function close(){
+        if (in_array($this->operation_status, [self::OPERATION_STATUS_RECEIVE, self::OPERATION_STATUS_PROCESS])) {
+            switch ($this->operation_type) {
+                case self::OPERATION_TYPE_CHARGE:
+                    return $this->charge->close();
                     break;
             }
 

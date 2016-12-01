@@ -139,17 +139,15 @@ class WxPayApi
 		if(!$inputObj->IsOut_trade_noSet()) {
 			throw new WxPayException("订单查询接口中，out_trade_no必填！");
 		}
-		$inputObj->SetAppid(WxPayConfig::APPID);//公众账号ID
-		$inputObj->SetMch_id(WxPayConfig::MCHID);//商户号
+		$inputObj->SetAppid($this->config->APPID);//公众账号ID
+		$inputObj->SetMch_id($this->config->MCHID);//商户号
 		$inputObj->SetNonce_str(self::getNonceStr());//随机字符串
 		
 		$inputObj->SetSign();//签名
 		$xml = $inputObj->ToXml();
-		
-		$startTimeStamp = self::getMillisecond();//请求开始时间
+
 		$response = self::postXmlCurl($xml, $url, false, $timeOut);
-		$result = WxPayResults::Init($response);
-		self::reportCostTime($url, $startTimeStamp, $result);//上报请求花费时间
+		$result = WxPayResults::Init($response, $this->config);
 		
 		return $result;
 	}

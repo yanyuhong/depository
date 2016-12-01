@@ -23,10 +23,10 @@ class OperationController extends ApiController
     public function behaviors()
     {
         $behaviors = parent::behaviors();
-        $behaviors['access']['only'] = ['query', 'charge', 'withdraw', 'refund', 'transfer', 'allowance'];
+        $behaviors['access']['only'] = ['query', 'charge', 'withdraw', 'refund', 'transfer', 'allowance', 'close'];
         $behaviors['access']['rules'] = [
             [
-                'actions' => ['query', 'charge', 'withdraw', 'refund', 'transfer', 'allowance'],
+                'actions' => ['query', 'charge', 'withdraw', 'refund', 'transfer', 'allowance', 'close'],
                 'allow' => true,
                 'roles' => ['@'],
             ],
@@ -101,6 +101,29 @@ class OperationController extends ApiController
 
     public function actionAllowance()
     {
+        return $this->renderJsonSuccess();
+    }
+
+    public function actionClose(){
+        $operationForm = new OperationForm();
+        $operationForm->load(['OperationForm' => Yii::$app->request->post()]);
+
+        if (!$operationForm->validate($operationForm->operationCloseRules())) {
+            return $this->renderJsonFailed('40001', $operationForm->getErrors());
+        }
+
+        $operationForm->searchByNum();
+
+        if (!$operationForm->operationModel) {
+            return $this->renderJsonFailed('43001');
+        }
+
+        $result = $operationForm->doClose();
+
+        if(!$result){
+            return $this->renderJsonFailed('43701');
+        }
+
         return $this->renderJsonSuccess();
     }
 }

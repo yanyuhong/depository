@@ -86,4 +86,21 @@ class Wechat
             $wechat->updateStatus($result);
         }
     }
+
+    /**
+     * @param $wechat \common\models\Wechat
+     */
+    public function close($wechat){
+        $input = new \WxPayCloseOrder($this->config);
+        $input->SetOut_trade_no($wechat->wechat_out_trade_no);
+
+        $result = $this->api->closeOrder($input);
+
+        if (isset($result['return_code']) && $result['return_code'] == "SUCCESS" && isset($result['result_code']) && $result['result_code'] == "SUCCESS") {
+            $this->queryTrade($wechat);
+            return true;
+        }
+
+        return false;
+    }
 }

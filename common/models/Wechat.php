@@ -132,11 +132,19 @@ class Wechat extends \yii\db\ActiveRecord
 
     public function query(){
         if (in_array($this->wechat_trade_state, ["", self::WECHAT_STATE_NOTPAY, self::WECHAT_STATE_USERPAYING])) {
-            $alipay_sdk = new \common\components\Wechat($this->wechatCharge->chargeOperation->operationChannel);
-            $alipay_sdk->queryTrade($this);
+            $wechat_sdk = new \common\components\Wechat($this->wechatCharge->chargeOperation->operationChannel);
+            $wechat_sdk->queryTrade($this);
         }
         $this->wechatCharge->updateStatus();
         return true;
+    }
+
+    public function close(){
+        if(in_array($this->wechat_trade_state, ["", self::WECHAT_STATE_NOTPAY, self::WECHAT_STATE_USERPAYING])){
+            $wechat_sdk = new \common\components\Wechat($this->wechatCharge->chargeOperation->operationChannel);
+            return $wechat_sdk->close($this);
+        }
+        return false;
     }
 
     public function updateStatus($result)

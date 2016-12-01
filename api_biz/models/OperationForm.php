@@ -85,6 +85,11 @@ class OperationForm extends Operation
         return ['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp'];
     }
 
+    public function operationCloseRules()
+    {
+        return ['num'];
+    }
+
     //==========
     //next is model function
     public function doCharge()
@@ -126,12 +131,21 @@ class OperationForm extends Operation
 
     public function queryStatus()
     {
-        if (in_array($this->operationModel->operation_type, [self::OPERATION_STATUS_RECEIVE, self::OPERATION_STATUS_PROCESS])) {
+        if (in_array($this->operationModel->operation_status, [self::OPERATION_STATUS_RECEIVE, self::OPERATION_STATUS_PROCESS])) {
             if (in_array($this->operationModel->operation_type, [self::OPERATION_TYPE_CHARGE])) {
                 $this->operationModel->depthQuery();
                 $this->searchByNum();
             }
         }
+    }
+
+    public function doClose()
+    {
+        if (in_array($this->operationModel->operation_status, [Operation::OPERATION_STATUS_RECEIVE, Operation::OPERATION_STATUS_PROCESS])) {
+            return $this->operationModel->close();
+        }
+
+        return false;
     }
 
     //===========

@@ -184,6 +184,20 @@ class Charge extends \yii\db\ActiveRecord
         }
     }
 
+    public function close(){
+        if(in_array($this->charge_status,[self::CHARGE_STATUS_RECEIVE, self::CHARGE_STATUS_WAIT])){
+            switch ($this->charge_type){
+                case self::CHARGE_TYPE_WECHAT_APP:
+                    return $this->wechat->close();
+                    break;
+                case self::CHARGE_TYPE_ALIPAY:
+                    return $this->alipay->close();
+                    break;
+            }
+        }
+        return false;
+    }
+
     public function getFinishTime()
     {
         switch ($this->charge_type) {
