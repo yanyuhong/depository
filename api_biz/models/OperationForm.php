@@ -11,6 +11,7 @@ use common\models\Account;
 use common\models\Charge;
 use common\models\Operation;
 
+use common\models\Refund;
 use Yii;
 
 class OperationForm extends Operation
@@ -24,6 +25,7 @@ class OperationForm extends Operation
     public $goodsType;
     public $express;
     public $spbillIp;
+    public $charge;
 
     /**
      * @var Operation
@@ -34,6 +36,11 @@ class OperationForm extends Operation
      */
     public $accountModel;
 
+    /**
+     * @var Operation
+     */
+    public $chargeOperationModel;
+
     public $payData;
 
     /**
@@ -42,9 +49,9 @@ class OperationForm extends Operation
     public function rules()
     {
         return [
-            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp'], 'trim'],
-            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp'], 'required'],
-            [['num', 'account'], 'string', 'max' => 64],
+            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp', 'charge'], 'trim'],
+            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp', 'charge'], 'required'],
+            [['num', 'account', 'charge'], 'string', 'max' => 64],
             [['spbillId'], 'string', 'max' => 16],
             [['title'], 'string', 'max' => 255],
             [['detail'], 'string', 'max' => 128],
@@ -70,6 +77,7 @@ class OperationForm extends Operation
             'goodsType' => '商品类型',
             'express' => '等待时间',
             'spbillIp' => '用户端IP',
+            'charge' => '充值操作流水号'
         ];
     }
 
@@ -83,6 +91,11 @@ class OperationForm extends Operation
     public function operationChargeRules()
     {
         return ['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp'];
+    }
+
+    public function operationRefundRules()
+    {
+        return ['num', 'charge', 'amount'];
     }
 
     public function operationCloseRules()
@@ -118,15 +131,42 @@ class OperationForm extends Operation
         return false;
     }
 
+    public function doRefund()
+    {
+        if ($this->saveThis(self::OPERATION_TYPE_REFUND)) {
+            $freeze = $this->chargeOperationModel->charge->chargeAccount->freezeAmount($this->operationModel->operation_id, $this->amount);
+            if (!$freeze) {
+                return false;
+            }
+            $refund = new Refund();
+            $refund->initNew(
+                $this->operationModel->operation_id,
+                $this->chargeOperationModel->charge->charge_id,
+                $this->amount
+            );
+            if ($refund->save()) {
+                if ($refund->submitRefund()) {
+                    $this->searchByNum();
+                    return true;
+                }
+            }
+            $this->chargeOperationModel->charge->chargeAccount->thawAmount($this->operationModel->operation_id, $this->amount);
+            $this->searchByNum();
+            return false;
+        }
+        return false;
+    }
+
     public function check()
     {
         $channel = Yii::$app->user->identity;
 
-        $operation = self::findByChannelNum($channel->channel_id, $this->num);
-        $this->operationModel = $operation;
+        $this->operationModel = Operation::findByChannelNum($channel->channel_id, $this->num);
 
-        $account = Account::findByChannelKey($channel->channel_id, $this->account);
-        $this->accountModel = $account;
+        $this->accountModel = Account::findByChannelKey($channel->channel_id, $this->account);
+
+        $this->chargeOperationModel = Operation::findByChannelNum($channel->channel_id, $this->charge);
+
     }
 
     public function queryStatus()
@@ -154,7 +194,7 @@ class OperationForm extends Operation
     public function searchByNum()
     {
         $channel = Yii::$app->user->identity;
-        $this->operationModel = self::findByChannelNum($channel->channel_id, $this->num);
+        $this->operationModel = Operation::findByChannelNum($channel->channel_id, $this->num);
     }
 
     //=========
@@ -175,6 +215,13 @@ class OperationForm extends Operation
         return [
             'status' => $this->copyStatus(),
             'payData' => $this->copyPayData(),
+        ];
+    }
+
+    public function ststusFields()
+    {
+        return [
+            'status' => $this->copyStatus(),
         ];
     }
 

@@ -128,7 +128,7 @@ class Charge extends \yii\db\ActiveRecord
             case self::CHARGE_TYPE_WECHAT_APP:
                 $wechat = new Wechat();
                 $wechat->initNew($this);
-                if($wechat->save()){
+                if ($wechat->save()) {
                     $orderMap = $wechat->pay();
                     return $orderMap;
                 }
@@ -170,7 +170,7 @@ class Charge extends \yii\db\ActiveRecord
                 }
                 break;
             case self::CHARGE_TYPE_WECHAT_APP:
-                if($this->wechat->wechat_trade_state){
+                if ($this->wechat->wechat_trade_state) {
                     $this->charge_status = $this->wechat->stateList[$this->wechat->wechat_trade_state];
                 }
                 break;
@@ -178,15 +178,16 @@ class Charge extends \yii\db\ActiveRecord
 
         if ($this->update()) {
             if ($this->charge_status == self::CHARGE_STATUS_SUCCESS) {
-                $this->chargeAccount->changeAmount($this->charge_operation_id, $this->charge_amount);
+                $this->chargeAccount->addAmount($this->charge_operation_id, $this->charge_amount);
             }
             $this->chargeOperation->updateStatus();
         }
     }
 
-    public function close(){
-        if(in_array($this->charge_status,[self::CHARGE_STATUS_RECEIVE, self::CHARGE_STATUS_WAIT])){
-            switch ($this->charge_type){
+    public function close()
+    {
+        if (in_array($this->charge_status, [self::CHARGE_STATUS_RECEIVE, self::CHARGE_STATUS_WAIT])) {
+            switch ($this->charge_type) {
                 case self::CHARGE_TYPE_WECHAT_APP:
                     return $this->wechat->close();
                     break;
@@ -205,7 +206,7 @@ class Charge extends \yii\db\ActiveRecord
                 return $this->alipay->alipay_send_pay_date;
                 break;
             case self::CHARGE_TYPE_WECHAT_APP:
-                if($this->wechat->wechat_time_end) {
+                if ($this->wechat->wechat_time_end) {
                     return Time::format($this->wechat->wechat_time_end);
                 }
                 break;
@@ -218,18 +219,27 @@ class Charge extends \yii\db\ActiveRecord
         switch ($this->charge_type) {
             case self::CHARGE_TYPE_ALIPAY:
                 if ($this->alipay->alipay_response) {
-                    return unserialize($this->alipay->alipay_response)->msg;
+                    $response = unserialize($this->alipay->alipay_response);
+                    return isset($response->sub_msg) ? $response->sub_msg : null;
                 }
                 break;
             case self::CHARGE_TYPE_WECHAT_APP:
-                if($this->wechat->wechat_response){
-                    if(isset(unserialize($this->wechat->wechat_response)['trade_state_desc'])){
+                if ($this->wechat->wechat_response) {
+                    if (isset(unserialize($this->wechat->wechat_response)['trade_state_desc'])) {
                         return unserialize($this->wechat->wechat_response)['trade_state_desc'];
                     }
                 }
                 break;
         }
         return null;
+    }
+
+    public function getRefundAmount()
+    {
+        $amount = Refund::findByChargeStatus($this->charge_id,
+            [Refund::REFUND_STATUS_RECEIVE, Refund::REFUND_STATUS_PROCESS, Refund::REFUND_STATUS_WAIT, Refund::REFUND_STATUS_SUCCESS]
+        )->sum('refund_amount');
+        return $amount;
     }
 
     //=======

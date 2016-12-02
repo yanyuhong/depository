@@ -29,6 +29,7 @@ use Yii;
  * @property string $alipay_updated_at
  *
  * @property Charge $alipayCharge
+ * @property AlipayRefund[] $alipayRefunds
  */
 class Alipay extends \yii\db\ActiveRecord
 {
@@ -184,8 +185,8 @@ class Alipay extends \yii\db\ActiveRecord
             } else {
 
             }
-        }else{
-            if($response->code == '10000' && $response->trade_status == self::ALIPAY_STATUS_SUCCESS){
+        } else {
+            if ($response->code == '10000' && $response->trade_status == self::ALIPAY_STATUS_SUCCESS) {
                 //todo:refund
             }
         }
@@ -217,5 +218,13 @@ class Alipay extends \yii\db\ActiveRecord
     public function getAlipayCharge()
     {
         return $this->hasOne(Charge::className(), ['charge_id' => 'alipay_charge_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getAlipayRefunds()
+    {
+        return $this->hasMany(AlipayRefund::className(), ['alipay_refund_alipay_id' => 'alipay_id']);
     }
 }

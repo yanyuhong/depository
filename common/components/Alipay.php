@@ -77,6 +77,7 @@ class Alipay
 
     /**
      * @param $model \common\models\Alipay
+     * @return bool
      */
     public function close($model)
     {
@@ -91,6 +92,33 @@ class Alipay
         $response = $this->aop->execute($request);
 
         $response = isset($response->alipay_trade_close_response) ? $response->alipay_trade_close_response : null;
+
+        if ($response && isset($response->code)) {
+            return $response;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param $model \common\models\AlipayRefund
+     * @return bool
+     */
+    public function refund($model)
+    {
+        $request = new \AlipayTradeRefundRequest();
+
+        $biz_content = [
+            "out_trade_no" => $model->alipayRefundAlipay->alipay_out_trade_no,
+            "refund_amount" => $model->alipay_refund_amount,
+            "out_request_no" => $model->alipay_refund_out_request_no,
+        ];
+
+        $request->setBizContent(json_encode($biz_content));
+
+        $response = $this->aop->execute($request);
+
+        $response = isset($response->alipay_trade_refund_response) ? $response->alipay_trade_refund_response : null;
 
         if ($response && isset($response->code)) {
             return $response;

@@ -30,6 +30,7 @@ class Operation extends \yii\db\ActiveRecord
 {
 
     const OPERATION_TYPE_CHARGE = 1; //交易类型:充值
+    const OPERATION_TYPE_REFUND = 3; //交易类型:退款
 
 
     const OPERATION_STATUS_RECEIVE = 1; //交易状态:接收
@@ -107,7 +108,8 @@ class Operation extends \yii\db\ActiveRecord
         return false;
     }
 
-    public function close(){
+    public function close()
+    {
         if (in_array($this->operation_status, [self::OPERATION_STATUS_RECEIVE, self::OPERATION_STATUS_PROCESS])) {
             switch ($this->operation_type) {
                 case self::OPERATION_TYPE_CHARGE:
@@ -131,6 +133,16 @@ class Operation extends \yii\db\ActiveRecord
                         $this->operation_finished_at = $finishTime;
                     }
                     $this->operation_message = $this->charge->getMessage();
+                }
+                break;
+            case self::OPERATION_TYPE_REFUND:
+                if ($this->refund->refund_status) {
+                    $this->operation_status = $this->refund->statusList[$this->refund->refund_status];
+                    $finishTime = $this->refund->getFinishTime();
+                    if ($finishTime) {
+                        $this->operation_finished_at = $finishTime;
+                    }
+                    $this->operation_message = $this->refund->getMessage();
                 }
                 break;
         }

@@ -12,6 +12,8 @@ namespace api_biz\versions\v1\controllers;
 use api_biz\components\ApiController;
 use api_biz\models\OperationForm;
 
+use common\components\Alipay;
+use common\models\Operation;
 use Yii;
 
 class OperationController extends ApiController
@@ -36,6 +38,8 @@ class OperationController extends ApiController
 
     public function actionQuery()
     {
+
+
         $operationForm = new OperationForm();
         $operationForm->load(['OperationForm' => Yii::$app->request->get()]);
 
@@ -91,7 +95,35 @@ class OperationController extends ApiController
 
     public function actionRefund()
     {
-        return $this->renderJsonSuccess();
+        $operationForm = new OperationForm();
+        $operationForm->load(['OperationForm' => Yii::$app->request->post()]);
+
+        if (!$operationForm->validate($operationForm->operationRefundRules())) {
+            return $this->renderJsonFailed('40001', $operationForm->getErrors());
+        }
+
+        $operationForm->check();
+
+        if ($operationForm->operationModel) {
+            return $this->renderJsonFailed('43002');
+        }
+
+        if (!$operationForm->chargeOperationModel
+            || $operationForm->chargeOperationModel->operation_type != Operation::OPERATION_TYPE_CHARGE
+            || $operationForm->chargeOperationModel->operation_status != Operation::OPERATION_STATUS_SUCCESS
+        ) {
+            return $this->renderJsonFailed('43401');
+        }
+
+        if ($operationForm->amount > $operationForm->chargeOperationModel->charge->chargeAccount->account_amount
+            || $operationForm->amount > $operationForm->chargeOperationModel->charge->charge_amount - $operationForm->chargeOperationModel->charge->getRefundAmount()
+        ) {
+            return $this->renderJsonFailed('43004');
+        }
+
+        $operationForm->doRefund();
+
+        return $this->renderJsonSuccess($operationForm->ststusFields());
     }
 
     public function actionTransfer()
@@ -104,7 +136,8 @@ class OperationController extends ApiController
         return $this->renderJsonSuccess();
     }
 
-    public function actionClose(){
+    public function actionClose()
+    {
         $operationForm = new OperationForm();
         $operationForm->load(['OperationForm' => Yii::$app->request->post()]);
 
@@ -120,7 +153,7 @@ class OperationController extends ApiController
 
         $result = $operationForm->doClose();
 
-        if(!$result){
+        if (!$result) {
             return $this->renderJsonFailed('43701');
         }
 

@@ -79,6 +79,9 @@ class AccountLog extends \yii\db\ActiveRecord
         $this->account_log_amount = $amount;
         $this->account_log_original_amount = $original;
         $this->account_log_changed_amount = $original + $amount;
+        if ($type == self::ACCOUNT_LOG_TYPE_FREEZE) {
+            $this->account_log_changed_amount = $original;
+        }
         $this->account_log_created_at = Time::now();
     }
 

@@ -81,17 +81,49 @@ class Account extends \yii\db\ActiveRecord
         $this->account_created_at = Time::now();
     }
 
-    public function changeAmount($operation, $amount)
+    public function addAmount($operation, $amount)
     {
         $account_log = new AccountLog();
         $account_log->initNew($this->account_id, $operation, AccountLog::ACCOUNT_LOG_TYPE_INTO, $amount, $this->account_amount);
         $account_log->save();
-        if ($amount < 0) {
-            $this->account_freeze_amount += $amount;
-        }
         $this->account_amount = $account_log->account_log_changed_amount;
         $this->save();
     }
+
+    public function freezeAmount($operation, $amount)
+    {
+        if ($this->account_amount - $this->account_freeze_amount < $amount) return false;
+        $account_log = new AccountLog();
+        $account_log->initNew($this->account_id, $operation, AccountLog::ACCOUNT_LOG_TYPE_FREEZE, $amount, $this->account_amount);
+        $account_log->save();
+        $this->account_freeze_amount += $amount;
+        $this->save();
+        return true;
+    }
+
+    public function thawAmount($operation, $amount)
+    {
+        if ($this->account_freeze_amount < $amount) return false;
+        $account_log = new AccountLog();
+        $account_log->initNew($this->account_id, $operation, AccountLog::ACCOUNT_LOG_TYPE_FREEZE, -$amount, $this->account_amount);
+        $account_log->save();
+        $this->account_freeze_amount -= $amount;
+        $this->save();
+        return true;
+    }
+
+    public function outAmount($operation, $amount)
+    {
+        if ($this->account_freeze_amount < $amount) return false;
+        $account_log = new AccountLog();
+        $account_log->initNew($this->account_id, $operation, AccountLog::ACCOUNT_LOG_TYPE_OUT, -$amount, $this->account_amount);
+        $account_log->save();
+        $this->account_freeze_amount -= $amount;
+        $this->account_amount = $account_log->account_log_changed_amount;
+        $this->save();
+        return true;
+    }
+
 
     //==================
     //next is find function
