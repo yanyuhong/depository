@@ -18,7 +18,7 @@ $this->params['breadcrumbs'][] = 'Wechat';
 
     <div class="channel-form-form">
 
-        <?php $form = ActiveForm::begin(); ?>
+        <?php $form = ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data']]); ?>
 
         <?= $form->field($model, 'channel_wechat_appid')->textInput(['maxlength' => true]) ?>
 
@@ -26,9 +26,9 @@ $this->params['breadcrumbs'][] = 'Wechat';
 
         <?= $form->field($model, 'channel_wechat_key')->textInput(['maxlength' => true]) ?>
 
-        <?= $form->field($model, 'channel_wechat_sslcert')->textarea(['rows' => '8']) ?>
+        <?= $form->field($model, 'wechat_sslcert')->fileInput() ?>
 
-        <?= $form->field($model, 'channel_wechat_sslkey')->textarea(['rows' => '8']) ?>
+        <?= $form->field($model, 'wechat_sslkey')->fileInput() ?>
 
         <div class="form-group">
             <?= Html::submitButton('提交', ['class' => 'btn btn-primary']) ?>

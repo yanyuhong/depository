@@ -38,6 +38,7 @@ return [
             'api_other/web/assets',
             'boss/runtime',
             'boss/web/assets',
+            'boss/web/uploads',
         ],
         'setExecutable' => [
             'yii',
@@ -53,6 +54,7 @@ return [
             'api_other/web/assets',
             'boss/runtime',
             'boss/web/assets',
+            'boss/web/uploads',
         ],
         'setExecutable' => [
             'yii',
@@ -68,6 +70,7 @@ return [
             'api_other/web/assets',
             'boss/runtime',
             'boss/web/assets',
+            'boss/web/uploads',
         ],
         'setExecutable' => [
             'yii',
@@ -83,6 +86,7 @@ return [
             'api_other/web/assets',
             'boss/runtime',
             'boss/web/assets',
+            'boss/web/uploads',
         ],
         'setExecutable' => [
             'yii',

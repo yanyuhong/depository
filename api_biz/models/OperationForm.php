@@ -145,10 +145,9 @@ class OperationForm extends Operation
                 $this->amount
             );
             if ($refund->save()) {
-                if ($refund->submitRefund()) {
-                    $this->searchByNum();
-                    return true;
-                }
+                $refund->submitRefund();
+                $this->searchByNum();
+                return true;
             }
             $this->chargeOperationModel->charge->chargeAccount->thawAmount($this->operationModel->operation_id, $this->amount);
             $this->searchByNum();
@@ -172,7 +171,7 @@ class OperationForm extends Operation
     public function queryStatus()
     {
         if (in_array($this->operationModel->operation_status, [self::OPERATION_STATUS_RECEIVE, self::OPERATION_STATUS_PROCESS])) {
-            if (in_array($this->operationModel->operation_type, [self::OPERATION_TYPE_CHARGE])) {
+            if (in_array($this->operationModel->operation_type, [self::OPERATION_TYPE_CHARGE, self::OPERATION_TYPE_REFUND])) {
                 $this->operationModel->depthQuery();
                 $this->searchByNum();
             }

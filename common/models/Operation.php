@@ -101,11 +101,14 @@ class Operation extends \yii\db\ActiveRecord
                 case self::OPERATION_TYPE_CHARGE:
                     $this->charge->query();
                     break;
+                case self::OPERATION_TYPE_REFUND:
+                    $this->refund->query();
+                    break;
             }
 
         }
 
-        return false;
+        return true;
     }
 
     public function close()

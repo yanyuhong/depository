@@ -36,6 +36,32 @@ CREATE TABLE IF NOT EXISTS `alipay_refund` (
 ENGINE = InnoDB;
 
 
+CREATE TABLE IF NOT EXISTS `wechat_refund` (
+  `wechat_refund_id` INT NOT NULL AUTO_INCREMENT,
+  `wechat_refund_refund_id` INT NOT NULL,
+  `wechat_refund_wechat_id` INT NOT NULL,
+  `wechat_refund_out_refund_no` VARCHAR(32) NOT NULL,
+  `wechat_refund_refund_fee` INT NOT NULL,
+  `wechat_refund_out_refund_id` VARCHAR(32) NULL,
+  `wechat_refund_status` VARCHAR(16) NULL,
+  `wechat_refund_response` TEXT NULL,
+  PRIMARY KEY (`wechat_refund_id`),
+  INDEX `fk_wechat_refund_refund1_idx` (`wechat_refund_refund_id` ASC),
+  INDEX `fk_wechat_refund_wechat1_idx` (`wechat_refund_wechat_id` ASC),
+  UNIQUE INDEX `refund_refund_id_UNIQUE` (`wechat_refund_refund_id` ASC),
+  UNIQUE INDEX `wechat_refund_out_refund_no_UNIQUE` (`wechat_refund_out_refund_no` ASC),
+  CONSTRAINT `fk_wechat_refund_refund1`
+    FOREIGN KEY (`wechat_refund_refund_id`)
+    REFERENCES `refund` (`refund_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_wechat_refund_wechat1`
+    FOREIGN KEY (`wechat_refund_wechat_id`)
+    REFERENCES `wechat` (`wechat_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
 EOF;
 
         $this->execute($sql);

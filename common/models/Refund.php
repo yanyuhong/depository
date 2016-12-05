@@ -16,6 +16,7 @@ use Yii;
  * @property AlipayRefund $alipayRefund
  * @property Charge $refundCharge
  * @property Operation $refundOperation
+ * @property WechatRefund $wechatRefund
  */
 class Refund extends \yii\db\ActiveRecord
 {
@@ -84,7 +85,15 @@ class Refund extends \yii\db\ActiveRecord
     {
         switch ($this->refundCharge->charge_type) {
             case Charge::CHARGE_TYPE_WECHAT_APP:
-
+                $wechat_refund = new WechatRefund();
+                $wechat_refund->initNew(
+                    $this->refund_id,
+                    $this->refundCharge->wechat->wechat_id,
+                    $this->refund_amount
+                );
+                if ($wechat_refund->save()) {
+                    return $wechat_refund->refund();
+                }
                 break;
             case Charge::CHARGE_TYPE_ALIPAY:
                 $alipay_refund = new AlipayRefund();
@@ -101,6 +110,22 @@ class Refund extends \yii\db\ActiveRecord
         return false;
     }
 
+    public function query()
+    {
+        if (in_array($this->refund_status, [self::REFUND_STATUS_RECEIVE, self::REFUND_STATUS_PROCESS])) {
+            switch ($this->refundCharge->charge_type) {
+                case Charge::CHARGE_TYPE_ALIPAY:
+
+                    break;
+                case Charge::CHARGE_TYPE_WECHAT_APP:
+                    $this->wechatRefund->query();
+                    break;
+            }
+        }
+        $this->refundOperation->updateStatus();
+        return true;
+    }
+
     public function updateStatus()
     {
         switch ($this->refundCharge->charge_type) {
@@ -110,13 +135,17 @@ class Refund extends \yii\db\ActiveRecord
                 }
                 break;
             case Charge::CHARGE_TYPE_WECHAT_APP:
-
+                if ($this->wechatRefund->wechat_refund_status) {
+                    $this->refund_status = $this->wechatRefund->statusList[$this->wechatRefund->wechat_refund_status];
+                }
                 break;
         }
 
         if ($this->update()) {
             if ($this->refund_status == self::REFUND_STATUS_SUCCESS) {
                 $this->refundCharge->chargeAccount->outAmount($this->refund_operation_id, $this->refund_amount);
+            }elseif($this->refund_status == self::REFUND_STATUS_FAIL){
+                $this->refundCharge->chargeAccount->freezeAmount($this->refund_operation_id, -$this->refund_amount);
             }
             $this->refundOperation->updateStatus();
         }
@@ -129,9 +158,7 @@ class Refund extends \yii\db\ActiveRecord
                 return $this->alipayRefund->alipay_refund_pay_time;
                 break;
             case Charge::CHARGE_TYPE_WECHAT_APP:
-//                if($this->wechat->wechat_time_end) {
-//                    return Time::format($this->wechat->wechat_time_end);
-//                }
+                return null;
                 break;
         }
         return null;
@@ -147,11 +174,11 @@ class Refund extends \yii\db\ActiveRecord
                 }
                 break;
             case Charge::CHARGE_TYPE_WECHAT_APP:
-//                if($this->wechat->wechat_response){
-//                    if(isset(unserialize($this->wechat->wechat_response)['trade_state_desc'])){
-//                        return unserialize($this->wechat->wechat_response)['trade_state_desc'];
-//                    }
-//                }
+                if ($this->wechatRefund->wechat_refund_response) {
+                    if (isset(unserialize($this->wechatRefund->wechat_refund_response)['err_code_des'])) {
+                        return unserialize($this->wechatRefund->wechat_refund_response)['err_code_des'];
+                    }
+                }
                 break;
         }
         return null;
@@ -189,5 +216,13 @@ class Refund extends \yii\db\ActiveRecord
     public function getRefundOperation()
     {
         return $this->hasOne(Operation::className(), ['operation_id' => 'refund_operation_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getWechatRefund()
+    {
+        return $this->hasOne(WechatRefund::className(), ['wechat_refund_refund_id' => 'refund_id']);
     }
 }

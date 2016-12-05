@@ -29,6 +29,7 @@ use Yii;
  * @property string $wechat_updated_at
  *
  * @property Charge $wechatCharge
+ * @property WechatRefund[] $wechatRefunds
  */
 class Wechat extends \yii\db\ActiveRecord
 {
@@ -177,5 +178,13 @@ class Wechat extends \yii\db\ActiveRecord
     public function getWechatCharge()
     {
         return $this->hasOne(Charge::className(), ['charge_id' => 'wechat_charge_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getWechatRefunds()
+    {
+        return $this->hasMany(WechatRefund::className(), ['wechat_refund_wechat_id' => 'wechat_id']);
     }
 }
