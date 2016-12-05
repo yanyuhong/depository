@@ -27,7 +27,7 @@ class AlipayController extends ApiController
         $out_trade_no = isset($_POST['out_trade_no'])?$_POST['out_trade_no']:null;
         $out_biz_no = isset($_POST['out_biz_no'])?$_POST['out_biz_no']:null;
 
-        if($out_trade_no){
+        if($out_trade_no && !$out_biz_no){
             $alipay = Alipay::findByOutTradeNo($out_trade_no);
             if($alipay){
                 $alipay->query();

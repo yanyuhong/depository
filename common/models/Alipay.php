@@ -140,7 +140,7 @@ class Alipay extends \yii\db\ActiveRecord
 
     public function query()
     {
-        if (in_array($this->alipay_trade_status, ["", self::ALIPAY_STATUS_WAIT])) {
+        if (in_array($this->alipay_trade_status, ["", self::ALIPAY_STATUS_WAIT, self::ALIPAY_STATUS_SYS_CLOSE])) {
             $alipay_sdk = new \common\components\Alipay($this->alipayCharge->chargeOperation->operationChannel);
             $alipay_sdk->queryTrade($this);
         }
@@ -187,7 +187,18 @@ class Alipay extends \yii\db\ActiveRecord
             }
         } else {
             if ($response->code == '10000' && $response->trade_status == self::ALIPAY_STATUS_SUCCESS) {
-                //todo:refund
+                $alipay_sdk = new \common\components\Alipay($this->alipayCharge->chargeOperation->operationChannel);
+                $alipay_refund = new AlipayRefund();
+                $alipay_refund->initNew(null, $this->alipay_id, $this->alipay_total_amount);
+                $response = $alipay_sdk->refund($alipay_refund);
+                var_dump($response);
+                if ($response) {
+                    if ($response->code == '10000' && !isset($response->sub_code) && isset($response->fund_change) && $response->fund_change == 'Y') {
+
+                    } else {
+                        //todo:log to refund fail
+                    }
+                }
             }
         }
 
