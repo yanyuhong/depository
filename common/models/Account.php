@@ -88,6 +88,7 @@ class Account extends \yii\db\ActiveRecord
         $account_log->save();
         $this->account_amount = $account_log->account_log_changed_amount;
         $this->save();
+        return true;
     }
 
     public function freezeAmount($operation, $amount)

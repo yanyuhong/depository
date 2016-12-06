@@ -144,8 +144,8 @@ class Refund extends \yii\db\ActiveRecord
         if ($this->update()) {
             if ($this->refund_status == self::REFUND_STATUS_SUCCESS) {
                 $this->refundCharge->chargeAccount->outAmount($this->refund_operation_id, $this->refund_amount);
-            }elseif($this->refund_status == self::REFUND_STATUS_FAIL){
-                $this->refundCharge->chargeAccount->freezeAmount($this->refund_operation_id, -$this->refund_amount);
+            } elseif ($this->refund_status == self::REFUND_STATUS_FAIL) {
+                $this->refundCharge->chargeAccount->thawAmount($this->refund_operation_id, $this->refund_amount);
             }
             $this->refundOperation->updateStatus();
         }

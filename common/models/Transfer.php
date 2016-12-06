@@ -21,6 +21,19 @@ use Yii;
  */
 class Transfer extends \yii\db\ActiveRecord
 {
+
+    const TRANSFER_TYPE_COMMON = 1;//转账类型:一般转账
+
+    const TRANSFER_STATUS_RECEIVE = 1;//状态:接收
+    const TRANSFER_STATUS_SUCCESS = 2;//状态:成功
+    const TRANSFER_STATUS_FAIL = 3;//状态:失败
+
+    public $statusList = [
+        self::TRANSFER_STATUS_RECEIVE => Operation::OPERATION_STATUS_RECEIVE,
+        self::TRANSFER_STATUS_SUCCESS => Operation::OPERATION_STATUS_SUCCESS,
+        self::TRANSFER_STATUS_FAIL => Operation::OPERATION_STATUS_FAIL
+    ];
+
     /**
      * @inheritdoc
      */
@@ -61,6 +74,52 @@ class Transfer extends \yii\db\ActiveRecord
         ];
     }
 
+    //==========
+    //next is model function
+    public function initNew($operation, $out, $into, $type, $amount)
+    {
+        $this->transfer_operation_id = $operation;
+        $this->transfer_out_account_id = $out;
+        $this->transfer_into_account_id = $into;
+        $this->transfer_type = $type;
+        $this->transfer_amount = $amount;
+    }
+
+    public function transfer()
+    {
+        $out = $this->transferOutAccount->outAmount($this->transfer_operation_id, $this->transfer_amount);
+        if (!$out) {
+            $this->transferOutAccount->thawAmount($this->transfer_operation_id, $this->transfer_amount);
+            $this->transfer_status = self::TRANSFER_STATUS_FAIL;
+        } else {
+            $into = $this->transferIntoAccount->addAmount($this->transfer_operation_id, $this->transfer_amount);
+            if (!$into) {
+                $this->transferOutAccount->addAmount($this->transfer_operation_id, $this->transfer_amount);
+                $this->transfer_status = self::TRANSFER_STATUS_FAIL;
+            } else {
+                $this->transfer_status = self::TRANSFER_STATUS_SUCCESS;
+            }
+        }
+        if ($this->update()) {
+            $this->transferOperation->updateStatus();
+        }
+
+        return true;
+
+    }
+
+    public function getFinishTime()
+    {
+        return "";
+    }
+
+    public function getMessage()
+    {
+        return "";
+    }
+
+    //==========
+    //next is fk function
     /**
      * @return \yii\db\ActiveQuery
      */

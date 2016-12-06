@@ -10,8 +10,8 @@ namespace api_biz\models;
 use common\models\Account;
 use common\models\Charge;
 use common\models\Operation;
-
 use common\models\Refund;
+use common\models\Transfer;
 use Yii;
 
 class OperationForm extends Operation
@@ -26,15 +26,28 @@ class OperationForm extends Operation
     public $express;
     public $spbillIp;
     public $charge;
+    public $accountOut;
+    public $accountInto;
 
     /**
      * @var Operation
      */
     public $operationModel;
+
     /**
      * @var Account
      */
     public $accountModel;
+
+    /**
+     * @var Account
+     */
+    public $accountOutModel;
+
+    /**
+     * @var Account
+     */
+    public $accountIntoModel;
 
     /**
      * @var Operation
@@ -49,9 +62,9 @@ class OperationForm extends Operation
     public function rules()
     {
         return [
-            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp', 'charge'], 'trim'],
-            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp', 'charge'], 'required'],
-            [['num', 'account', 'charge'], 'string', 'max' => 64],
+            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp', 'charge', 'accountOut', 'accountInto'], 'trim'],
+            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp', 'charge', 'accountOut', 'accountInto'], 'required'],
+            [['num', 'account', 'charge', 'accountOut', 'accountInto'], 'string', 'max' => 64],
             [['spbillId'], 'string', 'max' => 16],
             [['title'], 'string', 'max' => 255],
             [['detail'], 'string', 'max' => 128],
@@ -77,7 +90,9 @@ class OperationForm extends Operation
             'goodsType' => '商品类型',
             'express' => '等待时间',
             'spbillIp' => '用户端IP',
-            'charge' => '充值操作流水号'
+            'charge' => '充值操作流水号',
+            'accountOut' => '转出帐户',
+            'accountInto' => '转入帐户',
         ];
     }
 
@@ -96,6 +111,11 @@ class OperationForm extends Operation
     public function operationRefundRules()
     {
         return ['num', 'charge', 'amount'];
+    }
+
+    public function operationTransferRules()
+    {
+        return ['num', 'accountOut', 'accountInto', 'amount'];
     }
 
     public function operationCloseRules()
@@ -156,6 +176,33 @@ class OperationForm extends Operation
         return false;
     }
 
+    public function doTransfer()
+    {
+        if($this->saveThis(self::OPERATION_TYPE_TRANSFER)){
+            $freeze = $this->accountOutModel->freezeAmount($this->operationModel->operation_id,$this->amount);
+            if(!$freeze){
+                return false;
+            }
+            $transfer = new Transfer();
+            $transfer->initNew(
+                $this->operationModel->operation_id,
+                $this->accountOutModel->account_id,
+                $this->accountIntoModel->account_id,
+                Transfer::TRANSFER_TYPE_COMMON,
+                $this->amount
+            );
+            if($transfer->save()){
+                $transfer->transfer();
+                $this->searchByNum();
+                return true;
+            }
+            $this->accountOutModel->thawAmount($this->operationModel->operation_id,$this->amount);
+            $this->searchByNum();
+            return false;
+        }
+        return false;
+    }
+
     public function check()
     {
         $channel = Yii::$app->user->identity;
@@ -165,6 +212,10 @@ class OperationForm extends Operation
         $this->accountModel = Account::findByChannelKey($channel->channel_id, $this->account);
 
         $this->chargeOperationModel = Operation::findByChannelNum($channel->channel_id, $this->charge);
+
+        $this->accountOutModel = Account::findByChannelKey($channel->channel_id, $this->accountOut);
+
+        $this->accountIntoModel = Account::findByChannelKey($channel->channel_id, $this->accountInto);
 
     }
 
