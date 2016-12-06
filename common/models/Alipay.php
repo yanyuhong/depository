@@ -173,14 +173,14 @@ class Alipay extends \yii\db\ActiveRecord
     {
         if ($this->alipay_trade_status != self::ALIPAY_STATUS_SYS_CLOSE) {
             if ($response->code == '10000') {
-                $this->alipay_trade_no = $response->trade_no;
-                $this->alipay_buyer_logon_id = $response->buyer_logon_id;
-                $this->alipay_trade_status = $response->trade_status;
-                $this->alipay_receipt_amount = $response->receipt_amount;
-                $this->alipay_buyer_pay_amount = $response->buyer_pay_amount;
-                $this->alipay_point_amount = $response->point_amount;
-                $this->alipay_invoice_amount = $response->invoice_amount;
-                $this->alipay_send_pay_date = $response->send_pay_date;
+                $this->alipay_trade_no = isset($response->trade_no) ? $response->trade_no : null;
+                $this->alipay_buyer_logon_id = isset($response->buyer_logon_id) ? $response->buyer_logon_id : null;
+                $this->alipay_trade_status = isset($response->trade_status) ? $response->trade_status : null;
+                $this->alipay_receipt_amount = isset($response->receipt_amount) ? $response->receipt_amount : null;
+                $this->alipay_buyer_pay_amount = isset($response->buyer_pay_amount) ? $response->buyer_pay_amount : null;
+                $this->alipay_point_amount = isset($response->point_amount) ? $response->point_amount : null;
+                $this->alipay_invoice_amount = isset($response->invoice_amount) ? $response->invoice_amount : null;
+                $this->alipay_send_pay_date = isset($response->send_pay_date) ? $response->send_pay_date : null;
                 $this->alipay_response = serialize($response);
             } else {
 

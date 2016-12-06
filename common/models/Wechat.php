@@ -125,13 +125,15 @@ class Wechat extends \yii\db\ActiveRecord
         $this->wechat_trade_type = "APP";
     }
 
-    public function pay(){
+    public function pay()
+    {
         $wechat_sdk = new \common\components\Wechat($this->wechatCharge->chargeOperation->operationChannel);
         $orderMap = $wechat_sdk->getOrderMap($this);
         return $orderMap;
     }
 
-    public function query(){
+    public function query()
+    {
         if (in_array($this->wechat_trade_state, ["", self::WECHAT_STATE_NOTPAY, self::WECHAT_STATE_USERPAYING])) {
             $wechat_sdk = new \common\components\Wechat($this->wechatCharge->chargeOperation->operationChannel);
             $wechat_sdk->queryTrade($this);
@@ -140,8 +142,9 @@ class Wechat extends \yii\db\ActiveRecord
         return true;
     }
 
-    public function close(){
-        if(in_array($this->wechat_trade_state, ["", self::WECHAT_STATE_NOTPAY, self::WECHAT_STATE_USERPAYING])){
+    public function close()
+    {
+        if (in_array($this->wechat_trade_state, ["", self::WECHAT_STATE_NOTPAY, self::WECHAT_STATE_USERPAYING])) {
             $wechat_sdk = new \common\components\Wechat($this->wechatCharge->chargeOperation->operationChannel);
             return $wechat_sdk->close($this);
         }
@@ -150,12 +153,12 @@ class Wechat extends \yii\db\ActiveRecord
 
     public function updateStatus($result)
     {
-        $this->wechat_transaction_id = isset($result['transaction_id'])?$result['transaction_id']:null;
-        $this->wechat_trade_state = isset($result['trade_state'])?$result['trade_state']:null;
-        $this->wechat_openid = isset($result['openid'])?$result['openid']:null;
-        $this->wechat_bank_type = isset($result['bank_type'])?$result['bank_type']:null;
-        $this->wechat_cash_fee = isset($result['cash_fee'])?$result['cash_fee']:null;
-        $this->wechat_time_end = isset($result['time_end'])?$result['time_end']:null;
+        $this->wechat_transaction_id = isset($result['transaction_id']) ? $result['transaction_id'] : null;
+        $this->wechat_trade_state = isset($result['trade_state']) ? $result['trade_state'] : null;
+        $this->wechat_openid = isset($result['openid']) ? $result['openid'] : null;
+        $this->wechat_bank_type = isset($result['bank_type']) ? $result['bank_type'] : null;
+        $this->wechat_cash_fee = isset($result['cash_fee']) ? $result['cash_fee'] : null;
+        $this->wechat_time_end = isset($result['time_end']) ? $result['time_end'] : null;
         $this->wechat_response = serialize($result);
 
         if ($this->update()) {
@@ -165,7 +168,8 @@ class Wechat extends \yii\db\ActiveRecord
 
     //=======
     //next is find function
-    public static function findByOutTradeNo($trade_no){
+    public static function findByOutTradeNo($trade_no)
+    {
         return static::find()
             ->where(['wechat_out_trade_no' => $trade_no])
             ->one();
