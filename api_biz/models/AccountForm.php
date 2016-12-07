@@ -82,7 +82,7 @@ class AccountForm extends Account
 
     public function accountCardBindRules()
     {
-        return ['account', 'card', 'mobile', 'idNum', 'name', 'bank'];
+        return ['account', 'card', 'name', 'bank'];
     }
     //==================
     //next is search function

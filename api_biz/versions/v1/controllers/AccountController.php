@@ -67,6 +67,13 @@ class AccountController extends ApiController
 
     public function actionCardBind()
     {
-        return $this->renderJsonSuccess("绑定银行卡");
+        $accountForm = new AccountForm();
+        $accountForm->load(['AccountForm' => Yii::$app->request->post()]);
+
+        if (!$accountForm->validate($accountForm->accountCardBindRules())) {
+            return $this->renderJsonFailed('40001', $accountForm->getErrors());
+        }
+
+        return $this->renderJsonSuccess();
     }
 }

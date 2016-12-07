@@ -37,11 +37,11 @@ class Card extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['card_account_id', 'card_bank_id', 'card_num', 'card_name', 'card_id_num', 'card_mobile'], 'required'],
+            [['card_account_id', 'card_bank_id', 'card_num', 'card_name'], 'required'],
             [['card_account_id', 'card_bank_id', 'card_status'], 'integer'],
             [['card_created_at', 'card_updated_at'], 'safe'],
-            [['card_num', 'card_name'], 'string', 'max' => 32],
-            [['card_id_num', 'card_mobile'], 'string', 'max' => 45],
+            [['card_num', 'card_name', 'card_id_num'], 'string', 'max' => 32],
+            [['card_mobile'], 'string', 'max' => 16],
             [['card_account_id', 'card_num'], 'unique', 'targetAttribute' => ['card_account_id', 'card_num'], 'message' => 'The combination of Card Account ID and Card Num has already been taken.'],
             [['card_account_id'], 'exist', 'skipOnError' => true, 'targetClass' => Account::className(), 'targetAttribute' => ['card_account_id' => 'account_id']],
             [['card_bank_id'], 'exist', 'skipOnError' => true, 'targetClass' => Bank::className(), 'targetAttribute' => ['card_bank_id' => 'bank_id']],
