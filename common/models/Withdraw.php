@@ -20,6 +20,12 @@ use Yii;
  */
 class Withdraw extends \yii\db\ActiveRecord
 {
+
+    const WITHDRAW_STATUS_RECEIVE = 1; //提现状态:接收
+    const WITHDRAW_STATUS_PROCESS = 2; //提现状态:处理中
+    const WITHDRAW_STATUS_SUCCESS = 3; //提现状态:成功
+    const WITHDRAW_STATUS_FAIL = 4; //提现状态:失败
+
     /**
      * @inheritdoc
      */
@@ -58,7 +64,17 @@ class Withdraw extends \yii\db\ActiveRecord
             'withdraw_status' => 'Withdraw Status',
         ];
     }
-
+    //====================
+    //next is model function
+    public function initNew($operation_id, $account_id, $card_id, $amount)
+    {
+        $this->withdraw_operation_id = $operation_id;
+        $this->withdraw_account_id = $account_id;
+        $this->withdraw_card_id = $card_id;
+        $this->withdraw_amount = $amount;
+        $this->withdraw_status = self::WITHDRAW_STATUS_RECEIVE;
+    }
+    //=====================
     /**
      * @return \yii\db\ActiveQuery
      */

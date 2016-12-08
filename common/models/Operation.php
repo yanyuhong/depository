@@ -32,6 +32,7 @@ class Operation extends \yii\db\ActiveRecord
     const OPERATION_TYPE_CHARGE = 1; //交易类型:充值
     const OPERATION_TYPE_REFUND = 3; //交易类型:退款
     const OPERATION_TYPE_TRANSFER = 4; //交易类型:转账
+    const OPERATION_TYPE_WITHDRAW = 2; //交易类型:提现
 
 
     const OPERATION_STATUS_RECEIVE = 1; //交易状态:接收

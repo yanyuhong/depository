@@ -8,10 +8,12 @@
 namespace api_biz\models;
 
 use common\models\Account;
+use common\models\Card;
 use common\models\Charge;
 use common\models\Operation;
 use common\models\Refund;
 use common\models\Transfer;
+use common\models\Withdraw;
 use Yii;
 
 class OperationForm extends Operation
@@ -28,7 +30,11 @@ class OperationForm extends Operation
     public $charge;
     public $accountOut;
     public $accountInto;
-
+    public $card;
+    /**
+     * @var Card
+     */
+    public $cardModel;
     /**
      * @var Operation
      */
@@ -56,14 +62,15 @@ class OperationForm extends Operation
 
     public $payData;
 
+
     /**
      * @inheritdoc
      */
     public function rules()
     {
         return [
-            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp', 'charge', 'accountOut', 'accountInto'], 'trim'],
-            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp', 'charge', 'accountOut', 'accountInto'], 'required'],
+            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp', 'charge', 'accountOut', 'accountInto', 'card'], 'trim'],
+            [['num', 'account', 'amount', 'payment', 'title', 'detail', 'goodsType', 'express', 'spbillIp', 'charge', 'accountOut', 'accountInto', 'card'], 'required'],
             [['num', 'account', 'charge', 'accountOut', 'accountInto'], 'string', 'max' => 64],
             [['spbillId'], 'string', 'max' => 16],
             [['title'], 'string', 'max' => 255],
@@ -71,7 +78,8 @@ class OperationForm extends Operation
             [['express'], 'integer', 'min' => 300, 'max' => 1296000],
             [['amount'], 'number', 'min' => 0.01],
             ['payment', 'in', 'range' => array_keys(Charge::$paymentList)],
-            ['goodsType', 'in', 'range' => Charge::$goodsTypeList]
+            ['goodsType', 'in', 'range' => Charge::$goodsTypeList],
+            [['card', 'mobile'], 'integer'],
         ];
     }
 
@@ -123,6 +131,11 @@ class OperationForm extends Operation
         return ['num'];
     }
 
+    public function operationWithdraw()
+    {
+        return ['num', 'account', 'amount', 'card'];
+    }
+
     //==========
     //next is model function
     public function doCharge()
@@ -148,6 +161,25 @@ class OperationForm extends Operation
             }
         }
 
+        return false;
+    }
+
+    public function doWithdraw()
+    {
+        if ($this->saveThis(self::OPERATION_TYPE_WITHDRAW)) {
+            if ($this->accountModel->freezeAmount($this->operationModel->operation_id, $this->amount)) {
+                $withdraw = new Withdraw();
+                $withdraw->initNew(
+                    $this->operationModel->operation_id,
+                    $this->accountModel->account_id,
+                    $this->cardModel->card_id,
+                    $this->amount
+                );
+                if ($withdraw->save()) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -178,9 +210,9 @@ class OperationForm extends Operation
 
     public function doTransfer()
     {
-        if($this->saveThis(self::OPERATION_TYPE_TRANSFER)){
-            $freeze = $this->accountOutModel->freezeAmount($this->operationModel->operation_id,$this->amount);
-            if(!$freeze){
+        if ($this->saveThis(self::OPERATION_TYPE_TRANSFER)) {
+            $freeze = $this->accountOutModel->freezeAmount($this->operationModel->operation_id, $this->amount);
+            if (!$freeze) {
                 return false;
             }
             $transfer = new Transfer();
@@ -191,12 +223,12 @@ class OperationForm extends Operation
                 Transfer::TRANSFER_TYPE_COMMON,
                 $this->amount
             );
-            if($transfer->save()){
+            if ($transfer->save()) {
                 $transfer->transfer();
                 $this->searchByNum();
                 return true;
             }
-            $this->accountOutModel->thawAmount($this->operationModel->operation_id,$this->amount);
+            $this->accountOutModel->thawAmount($this->operationModel->operation_id, $this->amount);
             $this->searchByNum();
             return false;
         }
@@ -217,6 +249,7 @@ class OperationForm extends Operation
 
         $this->accountIntoModel = Account::findByChannelKey($channel->channel_id, $this->accountInto);
 
+        $this->cardModel = Card::findByNumAndAccountId($this->card, $this->accountModel ? $this->accountModel->account_id : null);
     }
 
     public function queryStatus()
@@ -237,6 +270,7 @@ class OperationForm extends Operation
 
         return false;
     }
+
 
     //===========
     //next is search function
@@ -274,7 +308,6 @@ class OperationForm extends Operation
             'status' => $this->copyStatus(),
         ];
     }
-
     //=========
     //next is private function
     private function saveThis($type)
