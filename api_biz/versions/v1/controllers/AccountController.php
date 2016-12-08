@@ -73,6 +73,19 @@ class AccountController extends ApiController
         if (!$accountForm->validate($accountForm->accountCardBindRules())) {
             return $this->renderJsonFailed('40001', $accountForm->getErrors());
         }
+        $accountForm->check();
+
+        if (!$accountForm->accountModel) {
+            return $this->renderJsonFailed('42002');
+        }
+
+        if (!$accountForm->bankModel) {
+            return $this->renderJsonFailed('42301');
+        }
+
+        if (!$accountForm->addCard()) {
+            return $this->renderJsonFailed('40000');
+        }
 
         return $this->renderJsonSuccess();
     }

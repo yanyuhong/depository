@@ -47,7 +47,16 @@ class Bank extends \yii\db\ActiveRecord
             'bank_name' => 'Bank Name',
         ];
     }
-
+    //==================
+    //next is find function
+    public static function findByNum($bank)
+    {
+        return static::find()
+            ->where([
+                "bank_num" => $bank,
+            ])->one();
+    }
+    //================
     /**
      * @return \yii\db\ActiveQuery
      */

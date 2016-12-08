@@ -10,6 +10,8 @@ namespace api_biz\models;
 
 use common\components\validator\IdnumValidator;
 use common\models\Account;
+use common\models\Bank;
+use common\models\Card;
 use Yii;
 use yii\base\Model;
 
@@ -21,6 +23,9 @@ class AccountForm extends Account
     public $idNum;
     public $name;
     public $bank;
+
+    public $accountModel;
+    public $bankModel;
 
     /**
      * @inheritdoc
@@ -73,6 +78,33 @@ class AccountForm extends Account
             return false;
         }
     }
+
+    public function addCard()
+    {
+        if (!Card::findByNumAndAccountId($this->card, $this->accountModel->account_id)) {
+            $card = new Card();
+            $card->initNew(
+                $this->accountModel ? $this->accountModel->account_id : null,
+                $this->bankModel ? $this->bankModel->bank_id : null,
+                $this->card,
+                $this->name
+            );
+            if (!$card->save()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function check()
+    {
+        $channel = Yii::$app->user->identity;
+
+        $this->accountModel = self::findByChannelKey($channel->channel_id, $this->account);
+
+        $this->bankModel = Bank::findByNum($this->bank);
+
+    }
     //=====================
     //next is rule function
     public function accountCreateRules()
@@ -99,6 +131,7 @@ class AccountForm extends Account
 
         return $new;
     }
+
     //================
     //next is field function
     public function selectList()

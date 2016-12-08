@@ -2,6 +2,7 @@
 
 namespace common\models;
 
+use common\tools\Time;
 use Yii;
 
 /**
@@ -66,7 +67,30 @@ class Card extends \yii\db\ActiveRecord
             'card_updated_at' => 'Card Updated At',
         ];
     }
+    //==================
+    //next is find function
+    public static function findByNumAndAccountId($num, $account_id)
+    {
+        return static::find()
+            ->where([
+                "card_num" => $num,
+                "card_account_id" => $account_id,
+            ])->one();
+    }
 
+    //================
+
+    //================
+    //next is model function
+    public function initNew($account_id, $bank_id, $card, $name)
+    {
+        $this->card_account_id = $account_id;
+        $this->card_bank_id = $bank_id;
+        $this->card_num = $card;
+        $this->card_name = $name;
+        $this->card_created_at = Time::now();
+    }
+    //===============
     /**
      * @return \yii\db\ActiveQuery
      */
