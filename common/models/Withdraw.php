@@ -26,6 +26,13 @@ class Withdraw extends \yii\db\ActiveRecord
     const WITHDRAW_STATUS_SUCCESS = 3; //提现状态:成功
     const WITHDRAW_STATUS_FAIL = 4; //提现状态:失败
 
+    public $statusList = [
+        self::WITHDRAW_STATUS_RECEIVE => Operation::OPERATION_STATUS_RECEIVE,
+        self::WITHDRAW_STATUS_PROCESS => Operation::OPERATION_STATUS_PROCESS,
+        self::WITHDRAW_STATUS_SUCCESS => Operation::OPERATION_STATUS_SUCCESS,
+        self::WITHDRAW_STATUS_FAIL => Operation::OPERATION_STATUS_FAIL,
+    ];
+
     /**
      * @inheritdoc
      */
@@ -74,6 +81,36 @@ class Withdraw extends \yii\db\ActiveRecord
         $this->withdraw_amount = $amount;
         $this->withdraw_status = self::WITHDRAW_STATUS_RECEIVE;
     }
+
+    public function query()
+    {
+        return true;
+    }
+
+    public function updateStatus($status)
+    {
+        $this->withdraw_status = $status;
+
+        if ($this->update()) {
+            if ($this->withdraw_status == self::WITHDRAW_STATUS_SUCCESS) {
+                $this->withdrawCard->cardAccount->outAmount($this->withdraw_operation_id, $this->withdraw_amount);
+            } elseif ($this->withdraw_status == self::WITHDRAW_STATUS_FAIL) {
+                $this->withdrawCard->cardAccount->thawAmount($this->withdraw_operation_id, $this->withdraw_amount);
+            }
+            $this->withdrawOperation->updateStatus();
+        }
+    }
+
+    public function getFinishTime()
+    {
+        return null;
+    }
+
+    public function getMessage()
+    {
+        return null;
+    }
+
     //=====================
     /**
      * @return \yii\db\ActiveQuery

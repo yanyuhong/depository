@@ -140,6 +140,16 @@ class Operation extends \yii\db\ActiveRecord
                     $this->operation_message = $this->charge->getMessage();
                 }
                 break;
+            case self::OPERATION_TYPE_WITHDRAW:
+                if ($this->withdraw->withdraw_status) {
+                    $this->operation_status = $this->withdraw->statusList[$this->withdraw->withdraw_status];
+                }
+                $finishTime = $this->withdraw->getFinishTime();
+                if ($finishTime) {
+                    $this->operation_finished_at = $finishTime;
+                }
+                $this->operation_message = $this->withdraw->getMessage();
+                break;
             case self::OPERATION_TYPE_REFUND:
                 if ($this->refund->refund_status) {
                     $this->operation_status = $this->refund->statusList[$this->refund->refund_status];
@@ -151,7 +161,7 @@ class Operation extends \yii\db\ActiveRecord
                 }
                 break;
             case self::OPERATION_TYPE_TRANSFER:
-                if($this->transfer->transfer_status){
+                if ($this->transfer->transfer_status) {
                     $this->operation_status = $this->transfer->statusList[$this->transfer->transfer_status];
                     $finishTime = $this->transfer->getFinishTime();
                     if ($finishTime) {

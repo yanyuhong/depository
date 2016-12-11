@@ -117,7 +117,7 @@ class Wechat
         $input->SetOut_refund_no($model->wechat_refund_out_refund_no);
         $input->SetTotal_fee($model->wechatRefundWechat->wechat_total_fee);
         $input->SetRefund_fee($model->wechat_refund_refund_fee);
-        $input->SetOp_user_id($model->wechatRefundWechat->wechatCharge->chargeOperation->operationChannel->channel_wechat_mchid);
+        $input->SetOp_user_id($model->wechatRefundRefund->refundOperation->operationChannel->channel_wechat_mchid);
 
         $result = $this->api->refund($input);
 
