@@ -16,6 +16,8 @@ class ChannelForm extends Channel
     public $wechat_sslcert;
     public $wechat_sslkey;
 
+    public $alipay_rsaPrivateKey;
+
     /**
      * @inheritdoc
      */
@@ -27,7 +29,7 @@ class ChannelForm extends Channel
             [['channel_name'], 'required'],
             [['channel_name'], 'string', 'max' => 255],
             [['channel_name'], 'unique'],
-            [['wechat_sslcert', 'wechat_sslkey'], 'file']
+            [['wechat_sslcert', 'wechat_sslkey', 'alipay_rsaPrivateKey'], 'file']
         ];
     }
 
@@ -44,6 +46,7 @@ class ChannelForm extends Channel
             'channel_alipay_appId' => '支付宝appId',
             'channel_alipay_rsaPrivateKey' => '支付宝私钥',
             'channel_alipay_rsaPublicKey' => '支付宝公钥',
+            'alipay_rsaPrivateKey' => '支付宝私钥',
             'channel_wechat_appid' => '微信应用Appid',
             'channel_wechat_mchid' => '微信商户ID',
             'channel_wechat_key' => '商户支付密钥',

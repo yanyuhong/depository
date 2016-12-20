@@ -22,7 +22,7 @@ $this->params['breadcrumbs'][] = 'Alipay';
 
         <?= $form->field($model, 'channel_alipay_appId')->textInput(['maxlength' => true]) ?>
 
-        <?= $form->field($model, 'channel_alipay_rsaPrivateKey')->textarea(['rows' => '6']) ?>
+        <?= $form->field($model, 'alipay_rsaPrivateKey')->fileInput() ?>
 
         <?= $form->field($model, 'channel_alipay_rsaPublicKey')->textarea(['rows' => '3']) ?>
 

@@ -24,7 +24,7 @@ class Alipay
     {
         $this->aop = new \AopClient();
         $this->aop->appId = $channel->channel_alipay_appId;
-        $this->aop->rsaPrivateKey = $channel->channel_alipay_rsaPrivateKey;
+        $this->aop->rsaPrivateKeyFilePath = $channel->channel_alipay_rsaPrivateKey;
         $this->aop->alipayrsaPublicKey = $channel->channel_alipay_rsaPublicKey;
     }
 

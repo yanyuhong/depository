@@ -105,13 +105,21 @@ class ChannelController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->channel_id]);
-        } else {
-            return $this->render('alipay', [
-                'model' => $model,
-            ]);
+        if ($model->load(Yii::$app->request->post())) {
+            $model->alipay_rsaPrivateKey = UploadedFile::getInstance($model, 'alipay_rsaPrivateKey');
+            $cert_path = getcwd() . '/uploads/' . $model->channel_id . '-' . $model->alipay_rsaPrivateKey->baseName . Time::time() . '.' . $model->alipay_rsaPrivateKey->extension;
+            if ($model->alipay_rsaPrivateKey) {
+                $model->alipay_rsaPrivateKey->saveAs($cert_path, false);
+                $model->channel_alipay_rsaPrivateKey = $cert_path;
+            }
+            if ($model->save()) {
+                return $this->redirect(['view', 'id' => $model->channel_id]);
+            }
         }
+        return $this->render('alipay', [
+            'model' => $model,
+        ]);
+
     }
 
     /**
@@ -126,14 +134,14 @@ class ChannelController extends Controller
 
         if ($model->load(Yii::$app->request->post())) {
             $model->wechat_sslcert = UploadedFile::getInstance($model, 'wechat_sslcert');
-            $cert_path = getcwd() . '/uploads/'. $model->channel_id . '-'. $model->wechat_sslcert->baseName . Time::time() . '.' . $model->wechat_sslcert->extension;
-            if($model->wechat_sslcert){
+            $cert_path = getcwd() . '/uploads/' . $model->channel_id . '-' . $model->wechat_sslcert->baseName . Time::time() . '.' . $model->wechat_sslcert->extension;
+            if ($model->wechat_sslcert) {
                 $model->wechat_sslcert->saveAs($cert_path, false);
                 $model->channel_wechat_sslcert = $cert_path;
             }
             $model->wechat_sslkey = UploadedFile::getInstance($model, 'wechat_sslkey');
-            $key_path = getcwd() . '/uploads/'. $model->channel_id . '-'. $model->wechat_sslkey->baseName . Time::time() . '.' . $model->wechat_sslkey->extension;
-            if($model->wechat_sslkey){
+            $key_path = getcwd() . '/uploads/' . $model->channel_id . '-' . $model->wechat_sslkey->baseName . Time::time() . '.' . $model->wechat_sslkey->extension;
+            if ($model->wechat_sslkey) {
                 $model->wechat_sslkey->saveAs($key_path, false);
                 $model->channel_wechat_sslkey = $key_path;
             }
