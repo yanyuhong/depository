@@ -64,6 +64,7 @@ class Wechat
         $result = $this->api->unifiedOrder($input);
 
         if (!isset($result['prepay_id']) || !$result['prepay_id']) {
+            \Yii::info('[' . date('Y-m-d H:i:s]') . serialize($result), 'wechat');
             return false;
         }
 
@@ -88,13 +89,19 @@ class Wechat
 
         if (isset($result['return_code']) && $result['return_code'] == "SUCCESS" && isset($result['result_code']) && $result['result_code'] == "SUCCESS") {
             $wechat->updateStatus($result);
+            return true;
+        } else {
+            \Yii::info('[' . date('Y-m-d H:i:s]') . serialize($result), 'wechat');
         }
+
+        return false;
     }
 
     /**
      * @param $wechat \common\models\Wechat
      */
-    public function close($wechat){
+    public function close($wechat)
+    {
         $input = new \WxPayCloseOrder($this->config);
         $input->SetOut_trade_no($wechat->wechat_out_trade_no);
 
@@ -103,6 +110,8 @@ class Wechat
         if (isset($result['return_code']) && $result['return_code'] == "SUCCESS" && isset($result['result_code']) && $result['result_code'] == "SUCCESS") {
             $this->queryTrade($wechat);
             return true;
+        } else {
+            \Yii::info('[' . date('Y-m-d H:i:s]') . serialize($result), 'wechat');
         }
 
         return false;
@@ -111,7 +120,8 @@ class Wechat
     /**
      * @param $model WechatRefund
      */
-    public function refund($model){
+    public function refund($model)
+    {
         $input = new \WxPayRefund($this->config);
         $input->SetOut_trade_no($model->wechatRefundWechat->wechat_out_trade_no);
         $input->SetOut_refund_no($model->wechat_refund_out_refund_no);
@@ -123,6 +133,8 @@ class Wechat
 
         if (isset($result['return_code']) && $result['return_code'] == "SUCCESS") {
             return $result;
+        } else {
+            \Yii::info('[' . date('Y-m-d H:i:s]') . serialize($result), 'wechat');
         }
 
         return false;
@@ -131,7 +143,8 @@ class Wechat
     /**
      * @param $model WechatRefund
      */
-    public function refundQuery($model){
+    public function refundQuery($model)
+    {
         $input = new \WxPayRefundQuery($this->config);
         $input->SetOut_refund_no($model->wechat_refund_out_refund_no);
 
@@ -140,6 +153,8 @@ class Wechat
         if (isset($result['return_code']) && $result['return_code'] == "SUCCESS" && isset($result['result_code']) && $result['result_code'] == "SUCCESS") {
             $model->updateStatus($result);
             return true;
+        } else {
+            \Yii::info('[' . date('Y-m-d H:i:s]') . serialize($result), 'wechat');
         }
 
         return false;

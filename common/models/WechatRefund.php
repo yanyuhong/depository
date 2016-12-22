@@ -113,7 +113,7 @@ class WechatRefund extends \yii\db\ActiveRecord
     }
 
     public function query(){
-        if(in_array($this->wechat_refund_status,["",self::WECHAT_REFUND_STATUS_REPORT])){
+        if(in_array($this->wechat_refund_status,["",self::WECHAT_REFUND_STATUS_REPORT,self::WECHAT_REFUND_STATUS_PROCESSING])){
             $wechat_sdk = new \common\components\Wechat($this->wechatRefundRefund->refundOperation->operationChannel);
             $response = $wechat_sdk->refundQuery($this);
         }

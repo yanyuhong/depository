@@ -72,6 +72,8 @@ class Alipay
 
         if ($response && isset($response->code)) {
             $model->updateStatus($response);
+        } else {
+            \Yii::info('[' . date('Y-m-d H:i:s]') . serialize($response), 'alipay');
         }
     }
 
@@ -95,6 +97,8 @@ class Alipay
 
         if ($response && isset($response->code)) {
             return $response;
+        } else {
+            \Yii::info('[' . date('Y-m-d H:i:s]') . serialize($response), 'alipay');
         }
 
         return false;
@@ -122,6 +126,8 @@ class Alipay
 
         if ($response && isset($response->code)) {
             return $response;
+        } else {
+            \Yii::info('[' . date('Y-m-d H:i:s]') . serialize($response), 'alipay');
         }
 
         return false;

@@ -29,6 +29,22 @@ return [
                     'maxFileSize' => 1024 * 2,
                     'maxLogFiles' => 20,
                 ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'levels' => ['info'],
+                    'categories' => ['alipay'],
+                    'logFile' => '@app/runtime/logs/info/alipay.log',
+                    'maxFileSize' => 1024 * 2,
+                    'maxLogFiles' => 20,
+                ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'levels' => ['info'],
+                    'categories' => ['wechat'],
+                    'logFile' => '@app/runtime/logs/info/wechat.log',
+                    'maxFileSize' => 1024 * 2,
+                    'maxLogFiles' => 20,
+                ],
             ]
         ]
     ],
