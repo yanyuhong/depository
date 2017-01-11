@@ -23,6 +23,7 @@ class Transfer extends \yii\db\ActiveRecord
 {
 
     const TRANSFER_TYPE_COMMON = 1;//转账类型:一般转账
+    const TRANSFER_TYPE_ALLOWANCE = 2;//转账类型:补贴(无转出帐户)
 
     const TRANSFER_STATUS_RECEIVE = 1;//状态:接收
     const TRANSFER_STATUS_SUCCESS = 2;//状态:成功
@@ -48,7 +49,7 @@ class Transfer extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['transfer_operation_id', 'transfer_out_account_id', 'transfer_into_account_id', 'transfer_type', 'transfer_amount'], 'required'],
+            [['transfer_operation_id', 'transfer_into_account_id', 'transfer_type', 'transfer_amount'], 'required'],
             [['transfer_operation_id', 'transfer_out_account_id', 'transfer_into_account_id', 'transfer_type', 'transfer_status'], 'integer'],
             [['transfer_amount'], 'number'],
             [['transfer_operation_id'], 'unique'],
@@ -87,25 +88,24 @@ class Transfer extends \yii\db\ActiveRecord
 
     public function transfer()
     {
-        $out = $this->transferOutAccount->outAmount($this->transfer_operation_id, $this->transfer_amount);
-        if (!$out) {
-            $this->transferOutAccount->thawAmount($this->transfer_operation_id, $this->transfer_amount);
-            $this->transfer_status = self::TRANSFER_STATUS_FAIL;
-        } else {
-            $into = $this->transferIntoAccount->addAmount($this->transfer_operation_id, $this->transfer_amount);
-            if (!$into) {
-                $this->transferOutAccount->addAmount($this->transfer_operation_id, $this->transfer_amount);
+        if ($this->transfer_type == self::TRANSFER_TYPE_COMMON && $this->transferOutAccount) {
+            $out = $this->transferOutAccount->outAmount($this->transfer_operation_id, $this->transfer_amount);
+            if (!$out) {
+                $this->transferOutAccount->thawAmount($this->transfer_operation_id, $this->transfer_amount);
                 $this->transfer_status = self::TRANSFER_STATUS_FAIL;
-            } else {
-                $this->transfer_status = self::TRANSFER_STATUS_SUCCESS;
+                return $this->endUpdate();
             }
         }
-        if ($this->update()) {
-            $this->transferOperation->updateStatus();
+        $into = $this->transferIntoAccount->addAmount($this->transfer_operation_id, $this->transfer_amount);
+        if (!$into) {
+            if ($this->transfer_type == self::TRANSFER_TYPE_COMMON && $this->transferOutAccount) {
+                $this->transferOutAccount->addAmount($this->transfer_operation_id, $this->transfer_amount);
+            }
+            $this->transfer_status = self::TRANSFER_STATUS_FAIL;
+        } else {
+            $this->transfer_status = self::TRANSFER_STATUS_SUCCESS;
         }
-
-        return true;
-
+        return $this->endUpdate();
     }
 
     public function getFinishTime()
@@ -116,6 +116,15 @@ class Transfer extends \yii\db\ActiveRecord
     public function getMessage()
     {
         return "";
+    }
+
+    private function endUpdate()
+    {
+        if ($this->update()) {
+            $this->transferOperation->updateStatus();
+        }
+
+        return true;
     }
 
     //==========

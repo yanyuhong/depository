@@ -33,6 +33,7 @@ class Operation extends \yii\db\ActiveRecord
     const OPERATION_TYPE_REFUND = 3; //交易类型:退款
     const OPERATION_TYPE_TRANSFER = 4; //交易类型:转账
     const OPERATION_TYPE_WITHDRAW = 2; //交易类型:提现
+    const OPERATION_TYPE_ALLOWANCE = 5; //交易类型:补贴
 
 
     const OPERATION_STATUS_RECEIVE = 1; //交易状态:接收
@@ -161,6 +162,7 @@ class Operation extends \yii\db\ActiveRecord
                 }
                 break;
             case self::OPERATION_TYPE_TRANSFER:
+            case self::OPERATION_TYPE_ALLOWANCE:
                 if ($this->transfer->transfer_status) {
                     $this->operation_status = $this->transfer->statusList[$this->transfer->transfer_status];
                     $finishTime = $this->transfer->getFinishTime();

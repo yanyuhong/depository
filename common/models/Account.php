@@ -21,6 +21,10 @@ use Yii;
  * @property Channel $accountChannel
  * @property AccountLog[] $accountLogs
  * @property Card[] $cards
+ * @property Charge[] $charges
+ * @property Transfer[] $transfers
+ * @property Transfer[] $transfers0
+ * @property Withdraw[] $withdraws
  */
 class Account extends \yii\db\ActiveRecord
 {
@@ -137,6 +141,8 @@ class Account extends \yii\db\ActiveRecord
             ])->one();
     }
 
+    //=======
+    //next is fk function
     /**
      * @return \yii\db\ActiveQuery
      */
@@ -159,5 +165,37 @@ class Account extends \yii\db\ActiveRecord
     public function getCards()
     {
         return $this->hasMany(Card::className(), ['card_account_id' => 'account_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getCharges()
+    {
+        return $this->hasMany(Charge::className(), ['charge_account_id' => 'account_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getTransfers()
+    {
+        return $this->hasMany(Transfer::className(), ['transfer_out_account_id' => 'account_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getTransfers0()
+    {
+        return $this->hasMany(Transfer::className(), ['transfer_into_account_id' => 'account_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getWithdraws()
+    {
+        return $this->hasMany(Withdraw::className(), ['withdraw_account_id' => 'account_id']);
     }
 }

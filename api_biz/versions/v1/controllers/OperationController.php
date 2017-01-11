@@ -93,7 +93,7 @@ class OperationController extends ApiController
         $operationForm = new OperationForm();
         $operationForm->load(['OperationForm' => Yii::$app->request->post()]);
 
-        if (!$operationForm->validate($operationForm->operationWithdraw())) {
+        if (!$operationForm->validate($operationForm->operationWithdrawRules())) {
             return $this->renderJsonFailed('40001', $operationForm->getErrors());
         }
         $operationForm->check();
@@ -188,7 +188,26 @@ class OperationController extends ApiController
 
     public function actionAllowance()
     {
-        return $this->renderJsonSuccess();
+        $operationForm = new OperationForm();
+        $operationForm->load(['OperationForm' => Yii::$app->request->post()]);
+
+        if (!$operationForm->validate($operationForm->operationAllowanceRules())) {
+            return $this->renderJsonFailed('40001', $operationForm->getErrors());
+        }
+
+        $operationForm->check();
+
+        if ($operationForm->operationModel) {
+            return $this->renderJsonFailed('43002');
+        }
+
+        if (!$operationForm->accountModel) {
+            return $this->renderJsonFailed('43003');
+        }
+
+        $operationForm->doAllowance();
+
+        return $this->renderJsonSuccess($operationForm->ststusFields());
     }
 
     public function actionClose()

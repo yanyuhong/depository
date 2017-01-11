@@ -131,9 +131,14 @@ class OperationForm extends Operation
         return ['num'];
     }
 
-    public function operationWithdraw()
+    public function operationWithdrawRules()
     {
         return ['num', 'account', 'amount', 'card'];
+    }
+
+    public function operationAllowanceRules()
+    {
+        return ['num', 'account', 'amount'];
     }
 
     //==========
@@ -231,6 +236,25 @@ class OperationForm extends Operation
             $this->accountOutModel->thawAmount($this->operationModel->operation_id, $this->amount);
             $this->searchByNum();
             return false;
+        }
+        return false;
+    }
+
+    public function doAllowance(){
+        if($this->saveThis(self::OPERATION_TYPE_ALLOWANCE)){
+            $transfer = new Transfer();
+            $transfer->initNew(
+                $this->operationModel->operation_id,
+                null,
+                $this->accountModel->account_id,
+                Transfer::TRANSFER_TYPE_ALLOWANCE,
+                $this->amount
+            );
+            if ($transfer->save()) {
+                $transfer->transfer();
+                $this->searchByNum();
+                return true;
+            }
         }
         return false;
     }
